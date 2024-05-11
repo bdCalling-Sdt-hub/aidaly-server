@@ -8,7 +8,8 @@ const signUpBoutique = async (req, res) => {
     try {
         const { name, email, password, address, rate,  city, state, description } = req.body;
       
-      const {boutiqueImage}=req.files;
+      const {image}=req.files;
+      console.log(image)
 
 
         // Validate request body
@@ -33,7 +34,7 @@ const signUpBoutique = async (req, res) => {
             name,
             email,
             password,
-            image:boutiqueImage[0],
+            image,
             
             rate,
             city,
@@ -43,8 +44,8 @@ const signUpBoutique = async (req, res) => {
             description
         };
  // Check if image is provided in the request
- if (boutiqueImage && boutiqueImage.length > 0) {
-    userDetails.boutiqueImage = boutiqueImage[0];
+ if (image && image.length > 0) {
+    userDetails.image = image[0];
 }
         // Call service function to register user
         await userRegister(userDetails);

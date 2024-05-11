@@ -5,6 +5,7 @@ const Location = require("../models/Location");
 
 
 const jwt = require('jsonwebtoken');
+const User = require("../models/User");
 
 // Controller functions
 const createLocation = async (req, res) => {
@@ -97,7 +98,8 @@ const getLocationById = async (req, res) => {
             return res.status(400).json({ success: false, message: 'User has already created a location.' });
         }
 
-    const location = await Location.findById(decoded._id);
+    const location = await User.findById(decoded._id);
+    console.log(location)
     if (!location) {
       return res.status(404).json({ error: 'Location not found' });
     }

@@ -97,32 +97,50 @@ const resendOtp=async(req,res, )=>{
         if (!user) {
           return res.status(404).json({ error: 'User not found' });
         }
-    
-        // Generate a new OTP
-        const oneTimeCode = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
-    // Prepare email for activate user
-    const emailData = {
-        email,
-        subject: 'Account Activation Email',
-        html: `
-      <h1>Hello, ${user.name}</h1>
-      <p>Your One Time Code is <h3>${oneTimeCode}</h3> to verify your email</p>
-      <small>This Code is valid for 3 minutes</small>
-      `
-    }
-    if(user.oneTimeCode===null){
-        res.status(400).json(Response({statusCode:400,status:'Failed', message: 'you alredy have otp please chaeck your email' }));
-    }
+    // if(user.oneTimeCode===null){
+
+    // }
+    //     // Generate a new OTP
+    //     const oneTimeCode = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+    // // Prepare email for activate user
+    // const emailData = {
+    //     email,
+    //     subject: 'Account Activation Email',
+    //     html: `
+    //   <h1>Hello, ${user.name}</h1>
+    //   <p>Your One Time Code is <h3>${oneTimeCode}</h3> to verify your email</p>
+    //   <small>This Code is valid for 3 minutes</small>
+    //   `
+    // }
+    if(user.oneTimeCode===null ){
+       
+     // Generate a new OTP
+     const oneTimeCode = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+     // Prepare email for activate user
+     const emailData = {
+         email,
+         subject: 'Account Activation Email',
+         html: `
+       <h1>Hello, ${user.name}</h1>
+       <p>Your One Time Code is <h3>${oneTimeCode}</h3> to verify your email</p>
+       <small>This Code is valid for 3 minutes</small>
+       `
+     }
         // Update user's oneTimeCode
         user.oneTimeCode = oneTimeCode;
-        if(user.isVerified)
-        await user.save();
+        // await user.save();
+        // if(user.isVerified)
+        const data =await user.save();
+        console.log(data, "resend data")
     
         // Send verification email with new OTP
         await emailWithNodemailer(emailData);
     
         // Send success response
-        res.status(200).json(Response({statusCode:200,status:'ok', message: 'OTP has been resent successfully',data:{user} }));
+        res.status(200).json(Response({statusCode:200,status:'ok', message: 'OTP has been resent successfully',data:{user} }))}
+        // bad response 
+        res.status(400).json(Response({statusCode:400,status:'Failed', message: 'you alredy have otp please chaeck your email ' }));
+    
       } catch (error) {
         console.error('Error resending OTP:', error);
         res.status(500).json({ error: 'Failed to resend OTP' }
@@ -267,6 +285,7 @@ module.exports = {
     signIn,
     forgotPassword,
     verifyCode,
-    cahngePassword,resendOtp
+    cahngePassword,
+    resendOtp
     
 };
