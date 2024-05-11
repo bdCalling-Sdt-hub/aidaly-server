@@ -1,14 +1,15 @@
 
+const Response = require("../helpers/response");
 const User = require("../models/User");
 const { userRegister } = require("../services/userService");
 
 // sign up boutique
 const signUpBoutique = async (req, res) => {
     try {
-        const { name, email, password, address, rate, phone, city, state, description } = req.body;
+        const { name, email, password, address, rate,  city, state, description } = req.body;
       
       const {boutiqueImage}=req.files;
-      console.log(boutiqueImage,"image")
+
 
         // Validate request body
         if (!name) {
@@ -33,7 +34,7 @@ const signUpBoutique = async (req, res) => {
             email,
             password,
             image:boutiqueImage[0],
-            phone,
+            
             rate,
             city,
             state,
@@ -41,11 +42,15 @@ const signUpBoutique = async (req, res) => {
             role: "boutique",
             description
         };
-
+ // Check if image is provided in the request
+ if (boutiqueImage && boutiqueImage.length > 0) {
+    userDetails.boutiqueImage = boutiqueImage[0];
+}
         // Call service function to register user
         await userRegister(userDetails);
 
-        res.status(200).json({ message: "A verification email is sent to your email" });
+        // res.status(200).json({ message: "A verification email is sent to your email" });
+        res.status(200).json(Response({statusCode:200,status:"sign up successfully", message: "A verification email is sent to your email", }));
 
     } catch (error) {
         console.error("Error in signUp controller:", error);

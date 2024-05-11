@@ -1,4 +1,5 @@
 
+const Response = require("../helpers/response");
 const Driver = require("../models/Driver");
 const User = require("../models/User");
 const jwt = require('jsonwebtoken');
@@ -52,16 +53,17 @@ const addVehicle = async (req, res, next) => {
             make,
             model,
             year,
-            driverLicense,
-            registration,
-            policeCheck,
-            registrationNumber
+            driverLicense:driverLicense[0],
+            registration:registration[0],
+            policeCheck:policeCheck[0],
+            registrationNumber:registrationNumber[0]
         });
 
         // Save the new vehicle to the database
-        await newVehicle.save();
+        const data =await newVehicle.save();
 
-        return res.status(200).json({ success: true, message: 'Vehicle added successfully.' });
+        // return res.status(200).json({ success: true, message: 'Vehicle added successfully.' });
+        res.status(200).json(Response({statusCode:200,status:"success", message: "vehical added successfully",data:{data} }));
     } catch (error) {
         console.error('Error adding vehicle:', error);
         return res.status(500).json({ success: false, message: 'Internal Server Error' });

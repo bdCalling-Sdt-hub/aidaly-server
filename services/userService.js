@@ -96,7 +96,7 @@ const userRegister = async (userDetails) => {
                 const foundUser = await User.findById(user._id);
                 if (foundUser && !foundUser.isVerified) {
                     await User.findByIdAndDelete(user._id);
-                    console.log('User deleted after 5 minutes of not being verified');
+                    console.log('User deleted after 3 minutes of not being verified');
                 }
             } catch (error) {
                 console.error('Error deleting user:', error);

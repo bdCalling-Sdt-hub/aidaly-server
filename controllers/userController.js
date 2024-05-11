@@ -8,7 +8,7 @@ const emailWithNodemailer = require("../helpers/email");
 //sign up user
 const signUp = async (req, res) => {
     try {
-        const { name, email, password,address,  phone, city, state, dateOfBirth, role } = req.body;
+        const { name, email, password,address, phone, city, state, dateOfBirth, role } = req.body;
         const {image} = req.files;
 
      
@@ -41,7 +41,8 @@ const signUp = async (req, res) => {
             city,
             state,
             address,
-            role
+            role,
+           
         }
 
 
