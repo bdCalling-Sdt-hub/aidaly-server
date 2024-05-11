@@ -101,7 +101,7 @@ const userRegister = async (userDetails) => {
             } catch (error) {
                 console.error('Error deleting user:', error);
             }
-        }, 300000); // 5 minutes in milliseconds
+        }, 180000); // 3 minutes in milliseconds
     } catch (error) {
         console.error("Error in userRegister service:", error);
         throw new Error("Error occurred while registering user");
