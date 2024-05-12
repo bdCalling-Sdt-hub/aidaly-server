@@ -28,6 +28,7 @@ const userSchema = new mongoose.Schema({
     privacyPolicyAccepted: { type: Boolean, default: false, required: false },
     isAdmin: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },
+    
     isDeleted: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
     // boutiqueImage: { type: Object, required: false, default: { publicFileURL: "images/users/user.png", path: "public\\images\\users\\user.png" } },

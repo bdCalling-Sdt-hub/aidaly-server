@@ -4,7 +4,7 @@ const User = require("../models/User");
 const bcrypt = require('bcryptjs');
 const { createJSONWebToken } = require('../helpers/jsonWebToken');
 const emailWithNodemailer = require("../helpers/email");
-
+const jwt = require("jsonwebtoken");
 //sign up user
 const signUp = async (req, res) => {
     try {
@@ -264,12 +264,41 @@ const cahngePassword = async (req, res) => {
     }
 };
 
+const userBlocked=async(req,res,next)=>{
+     // Get the token from the request headers
+     const tokenWithBearer = req.headers.authorization;
+     let token;
+ 
+     if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+         // Extract the token without the 'Bearer ' prefix
+         token = tokenWithBearer.slice(7);
+     }
+ 
+     if (!token) {
+         return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
+     }
+ 
+     try {
+         // Verify the token
+         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        const user=await User.findById(decoded._id)
+       user.isBlocked=true
+      const blockData=await  user.save()
+    
+        res.status(200).json(Response({ statusCode: 200, message: 'disabled error .',status:'faield',data:{blockData} }));
+
+     }catch(error){
+        res.status(500).json(Response({ statusCode: 500, message: 'server error .',status:'faield' }));
+     }
+
+}
 module.exports = {
     signUp,
     signIn,
     forgotPassword,
     verifyCode,
     cahngePassword,
-    resendOtp
+    resendOtp,
+    userBlocked
     
 };
