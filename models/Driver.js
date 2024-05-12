@@ -10,7 +10,7 @@ const vehicleSchema = new mongoose.Schema({
     driverLicense:{type:Object,required:true,},
     registration:{type:Object,required:true,},
     policeCheck:{type:Object,required:true,},
-    registrationNumber:{type:Object,required:true,}
+    registrationNumber:{type:String,required:true,}
     
   }, { timestamps: true },
 );

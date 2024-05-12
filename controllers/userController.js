@@ -50,23 +50,7 @@ const signUp = async (req, res) => {
         if (image && image.length > 0) {
             userDetails.image = image[0];
         }
-        // const user = await User.findOne({ email });
-        // if(user){
-            
-        //     return res.status(400).json(Response({ status:"Failed", statusCode:400, message: "User already exists" }));
-        // }
-        // if (user) {
-        //     if(user.isVerified){
-            
-        //     return res.status(400).json(Response({ status:"Failed", statusCode:400, message: "User already exists" }));
-        // }
-        //     else{
-
-        //        const data= await User.findByIdAndUpdate(user._id,userDetails)
-
-        //        res.status(200).json(Response({statusCode:200,status:"sign up successfully", message: "A verification email is sent to your email",data:{data} }));
-        //     }
-        // }
+        
         // Call service function to register user
        const data= await userRegister(userDetails);
 

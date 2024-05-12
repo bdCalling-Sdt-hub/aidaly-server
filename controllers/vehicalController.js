@@ -4,6 +4,7 @@ const Driver = require("../models/Driver");
 const User = require("../models/User");
 const jwt = require('jsonwebtoken');
 const addVehicle = async (req, res, next) => {
+   
     // Get the token from the request headers
     const tokenWithBearer = req.headers.authorization;
     let token;
@@ -44,19 +45,19 @@ const addVehicle = async (req, res, next) => {
         }
 
         // If the driver is valid and has not added a vehicle yet
-        const { make, model, year } = req.body;
-        const { driverLicense, registration, policeCheck, registrationNumber } = req.files;
+        const { make, model, year,registrationNumber } = req.body;
+        const { driverLicense, registration, policeCheck,  } = req.files;
 
         // Create a new vehicle object with user ID
         const newVehicle = new Driver({
             userId: decoded._id,
             make,
             model,
-            year,
+            year,registrationNumber,
             driverLicense:driverLicense[0],
             registration:registration[0],
             policeCheck:policeCheck[0],
-            registrationNumber:registrationNumber[0]
+           
         });
 
         // Save the new vehicle to the database

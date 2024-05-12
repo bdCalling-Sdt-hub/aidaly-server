@@ -8,6 +8,7 @@ var logger = require('morgan');
 
 //import routes
 const userRouter = require('./routes/userRouter');
+const productRouter=require('./routes/productRouter')
 
 
 const { connectToDatabase } = require('./helpers/connection');
@@ -33,8 +34,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 //Routes
 app.use('/api/v1/user', userRouter);
 // app.use('/api/v1/user', locationRouter);
-// driver route
-// app.use('/api/v1/user', userRouter);
+
+// product
+ app.use('/api/v1/product', productRouter);
 // test route
 app.get('/api/test', (req, res) => {
   res.send('I am responding!');
