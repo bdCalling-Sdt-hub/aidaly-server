@@ -15,11 +15,14 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    
+    
    
     images: [{
         type: Object,
         required: true
     }],
+    firstImage:{type:Object, required:false},
     inventoryQuantity: {
         type: String,
         default: "0"

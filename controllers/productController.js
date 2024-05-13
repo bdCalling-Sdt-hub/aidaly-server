@@ -9,9 +9,22 @@ const jwt = require("jsonwebtoken");
 
 const productCreate = async (req, res, next) => {
     console.log(req.body);
-    const { productName, category, inventoryQuantity, color, size,price } = req.body;
+    const { productName, category, inventoryQuantity,firstImage, color, size,price } = req.body;
     const { productImage1 } = req.files;
-    console.log(productImage1.length,"product image")
+   
+    const files = [];
+    if (req.files) {
+        productImage1.forEach((productImage1) => {
+        const publicFileUrl = `/images/users/${productImage1.filename}`;
+        
+        files.push({
+          publicFileUrl,
+          path: productImage1.filename,
+        });
+        // console.log(files);
+      });
+    }
+    console.log(files,"new file")
 
     // Get the token from the request headers
     const tokenWithBearer = req.headers.authorization;
@@ -46,11 +59,10 @@ const productCreate = async (req, res, next) => {
             color: color,
             size: size,
             price:price,
-            images:productImage1
+            images:files,
+            firstImage:files[0]
             
-            // Add logic to handle image uploads and store image URLs in the product document
-            // For example, you might save the images to a file system or cloud storage and store the URLs in the product document
-            // images: imageUrls
+            
         });
 
         // Save the new product document to the database
@@ -102,8 +114,31 @@ const showProductByUser=async(req,res,next)=>{
 
 
 }
+// show  rest of the product form database
+const allProducs=async(_req,res,next)=>{
+
+
+    try {
+        
+  
+
+     
+
+        const products= await Product.find();
+       
+
+          // For demonstration purposes, I'm just sending a success response
+       res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:{products} }));
+   } catch (error) {
+       console.log(error);
+       // Handle any errors
+       return res.status(500).json(Response({ statusCode: 500, message: 'Internal server error.',status:'server error' }));
+   }
+
+
+}
 
 module.exports = {
     productCreate,
-    showProductByUser
+    showProductByUser,allProducs
 };
