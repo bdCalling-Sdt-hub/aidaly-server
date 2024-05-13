@@ -69,6 +69,11 @@ const productCreate = async (req, res, next) => {
         // Save the new product document to the database
         const savedProduct = await newProduct.save();
 
+        // After 5 minutes, update isArrival to false
+        setTimeout(async () => {
+            await Product.findByIdAndUpdate(savedProduct._id, { $set: { isNewArrivel: false } });
+        }, 1 * 60 * 1000); // 5 minutes in milliseconds
+
         // For demonstration purposes, I'm just sending a success response
         res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product created successfully",data:{savedProduct} }));
     } catch (error) {
@@ -98,7 +103,7 @@ const showProductByUser=async(req,res,next)=>{
          // Verify the token
          const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
  
-         console.log(decoded.role, "this role");
+        
  
       
 
@@ -141,8 +146,14 @@ const allProducts=async(_req,res,next)=>{
 const showProductByCategory = async (req, res, next) => {
     try {
         const category = req.params.category; // Assuming category is passed in request params
-        const products = await Product.find({ category }); // Assuming category is a field in your Product model
-    
+        let products;
+
+        if (category === 'new arrivels') {
+            // Assuming "new arrival" is determined by a field called isArrival
+            products = await Product.find({ isNewArrivel: true });
+        } else {
+            products = await Product.find({ category });
+        }
         res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:{products} }));
     } catch (error) {
               // Handle any errors
@@ -150,9 +161,7 @@ const showProductByCategory = async (req, res, next) => {
     }
 }
 
-module.exports = {
-    showProductByCategory
-};
+
 
 module.exports = {
     productCreate,

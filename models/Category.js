@@ -11,6 +11,10 @@ const categorySchema = new mongoose.Schema({
     default: ''
   },
   
+  categoryImage: { type: Object, required: true},
+
+  
+  
 });
 
 // Create the Category model

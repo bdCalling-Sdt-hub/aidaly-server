@@ -1,10 +1,25 @@
 const Response = require("../helpers/response");
 const Category = require("../models/Category");
 const jwt = require("jsonwebtoken");
+
 // Create category
 const createCategory = async (req, res, next) => {
     const { name } = req.body;
-
+    const {categoryImage} = req.files;
+console.log(categoryImage,"this is un defiend")
+const files = [];
+if (req.files) {
+    categoryImage.forEach((categoryImage) => {
+    const publicFileUrl = `/images/users/${categoryImage.filename}`;
+    
+    files.push({
+      publicFileUrl,
+      path: categoryImage.filename,
+    });
+    // console.log(files);
+  });
+}
+    
 // Get the token from the request headers
 const tokenWithBearer = req.headers.authorization;
 let token;
@@ -22,7 +37,6 @@ try {
     // Verify the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-    console.log(decoded._id, "this role");
 
     // Check if the user has the "boutique" role
     if (decoded.role !== "admin") {
@@ -31,15 +45,16 @@ try {
     }
         // Convert the category name to lowercase
         const lowercaseName = name.toLowerCase();
+        
 
         // Check if the lowercase category name already exists
-        const existingCategory = await Category.findOne({ name: lowercaseName });
+        const existingCategory = await Category.findOne({ name:lowercaseName });
         if (existingCategory) {
             return res.status(400).json(Response({ statusCode: 400, message: 'Category already exists', status: "Failed" }));
         }
 
         // Create the category
-        const newCategory = await Category.create({ name: lowercaseName });
+        const newCategory = await Category.create({name:lowercaseName,categoryImage:files[0]} )
 
         res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Category created successfully", data: { category: newCategory } }));
     } catch (error) {
@@ -60,8 +75,28 @@ const getallCategory=async(_req,res,_next)=>{
     }
 
 }
+
+// catagory with product image 
+
+const getallCategoryWithProductImage = async (_req, res, _next) => {
+    try {
+        // Query all products
+        const allProducts = await Category.find()
+
+        res.status(200).json(Response({statusCode:200,status:"ok",message:"your category fetched",data:{allProducts}}));
+    } catch (error) {
+        console.error(error);
+        res.status(500).json(Response({ statusCode: 500, message: 'Internal server error', status: "Failed" }));
+    }
+}
+
+
+
+
 module.exports={
     createCategory,
-    getallCategory
+    getallCategory,
+    getallCategoryWithProductImage
+    
 
 }
