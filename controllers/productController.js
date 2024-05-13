@@ -3,7 +3,7 @@ const Response = require("../helpers/response");
 const Product = require("../models/Product");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-
+const slugify = require('slugify');
 
 // create product
 
@@ -50,7 +50,7 @@ const productCreate = async (req, res, next) => {
             // If the user does not have the "boutique" role, return an error
             return res.status(403).json(Response({ statusCode: 403, message: 'You are not authorized to create products.',status:'faield' }));
         }
-
+        const slug = slugify(productName, { lower: true });
         const newProduct = new Product({
             userId:decoded._id,
             name: productName,
@@ -60,7 +60,8 @@ const productCreate = async (req, res, next) => {
             size: size,
             price:price,
             images:files,
-            firstImage:files[0]
+            firstImage:files[0],
+            slug:slug
             
             
         });
@@ -115,7 +116,7 @@ const showProductByUser=async(req,res,next)=>{
 
 }
 // show  rest of the product form database
-const allProducs=async(_req,res,next)=>{
+const allProducts=async(_req,res,next)=>{
 
 
     try {
@@ -137,8 +138,25 @@ const allProducs=async(_req,res,next)=>{
 
 
 }
+const showProductByCategory = async (req, res, next) => {
+    try {
+        const category = req.params.category; // Assuming category is passed in request params
+        const products = await Product.find({ category }); // Assuming category is a field in your Product model
+    
+        res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:{products} }));
+    } catch (error) {
+              // Handle any errors
+              return res.status(500).json(Response({ statusCode: 500, message: 'Internal server error.',status:'server error' })); next(error);
+    }
+}
+
+module.exports = {
+    showProductByCategory
+};
 
 module.exports = {
     productCreate,
-    showProductByUser,allProducs
+    showProductByUser,
+    allProducts,
+    showProductByCategory
 };
