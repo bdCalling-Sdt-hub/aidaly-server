@@ -11,7 +11,18 @@ const signUp = async (req, res) => {
         const { name, email, password,address, phone, city, state, dateOfBirth, role } = req.body;
         const {image} = req.files;
 
-     
+        const files = [];
+        if (req.files) {
+            image.forEach((image) => {
+            const publicFileUrl = `/images/users/${image.filename}`;
+            
+            files.push({
+              publicFileUrl,
+              path: image.filename,
+            });
+            // console.log(files);
+          });
+        }
 
         // Validate request body
         if (!name) {
@@ -47,8 +58,8 @@ const signUp = async (req, res) => {
 
 
         // Check if image is provided in the request
-        if (image && image.length > 0) {
-            userDetails.image = image[0];
+        if (files && files.length > 0) {
+            userDetails.image = files[0];
         }
         
         // Call service function to register user

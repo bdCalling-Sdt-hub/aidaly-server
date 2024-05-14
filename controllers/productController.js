@@ -1,5 +1,6 @@
 
 const Response = require("../helpers/response");
+const Category = require("../models/Category");
 const Product = require("../models/Product");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
@@ -105,13 +106,13 @@ const showProductByUser=async(req,res,next)=>{
  
         
  
-      
+      const boutique=await User.findById(decoded._id)
 
          const allProductForUser = await Product.find({userId: decoded._id });
         
 
            // For demonstration purposes, I'm just sending a success response
-        res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product created successfully",data:{allProductForUser} }));
+        res.status(200).json(Response({ statusCode: 200, status: "ok", message: "showed all product for the boutique",data:{boutique,allProductForUser} }));
     } catch (error) {
         console.log(error);
         // Handle any errors
@@ -146,6 +147,13 @@ const allProducts=async(_req,res,next)=>{
 const showProductByCategory = async (req, res, next) => {
     try {
         const category = req.params.category; // Assuming category is passed in request params
+
+          // Check if the category exists in your category collection
+          const categoryExists = await Category.findOne({ name: category });
+        
+          if (!categoryExists) {
+              return res.status(404).json(Response({ statusCode: 404, message: "Category not found.", status: 'not found' }));
+          }
         let products;
 
         if (category === 'new arrivels') {
@@ -154,6 +162,9 @@ const showProductByCategory = async (req, res, next) => {
         } else {
             products = await Product.find({ category });
         }
+        if (products.length === 0) {
+            return res.status(404).json(Response({ statusCode: 404, message: "No products found for this category.", status: 'not found' }));
+        }
         res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:{products} }));
     } catch (error) {
               // Handle any errors
@@ -161,6 +172,23 @@ const showProductByCategory = async (req, res, next) => {
     }
 }
 
+// product deatils
+
+const ProductDetails=async(req,res,next)=>{
+
+    const { id } = req.query;
+    
+    try {
+
+        const product=await Product.findById(id)
+        res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:{product} }));
+    } catch (error) {
+         // Handle any errors
+         return res.status(500).json(Response({ statusCode: 500, message: 'Internal server error.',status:'server error' })); next(error);
+        
+    }
+
+}
 
 
 module.exports = {
@@ -168,4 +196,4 @@ module.exports = {
     showProductByUser,
     allProducts,
     showProductByCategory
-};
+,ProductDetails};
