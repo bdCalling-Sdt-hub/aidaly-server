@@ -145,27 +145,13 @@ const allProducts=async(_req,res,next)=>{
 
 }
 const showProductByCategory = async (req, res, next) => {
-    try {
-        const category = req.params.category; // Assuming category is passed in request params
-
-          // Check if the category exists in your category collection
-          const categoryExists = await Category.findOne({ name: category });
-        
-          if (!categoryExists) {
-              return res.status(404).json(Response({ statusCode: 404, message: "Category not found.", status: 'not found' }));
-          }
-        let products;
-
-        if (category === 'new arrivels') {
-            // Assuming "new arrival" is determined by a field called isArrival
-            products = await Product.find({ isNewArrivel: true });
-        } else {
-            products = await Product.find({ category });
-        }
-        if (products.length === 0) {
-            return res.status(404).json(Response({ statusCode: 404, message: "No products found for this category.", status: 'not found' }));
-        }
-        res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:{products} }));
+    try{
+        const category = req.params.category;
+      
+    
+        const products = await Product.find({ category: category }).populate('userId','name image');
+    
+        res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:{products,csometic} }));
     } catch (error) {
               // Handle any errors
               return res.status(500).json(Response({ statusCode: 500, message: 'Internal server error.',status:'server error' })); next(error);

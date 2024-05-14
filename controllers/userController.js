@@ -168,7 +168,7 @@ res.status(401).json(Response({statusCode:401, message:'you are not veryfied',st
         if (user.isBlocked) {
             return res.status(401).json(Response({ statusCode: 401, message: 'You are blocked', status: "Failed" }));
         }
-
+           
         // Compare the provided password with the stored hashed password
         const isPasswordValid = await bcrypt.compare(password, user.password);
         console.log("---------------", isPasswordValid)
@@ -179,6 +179,9 @@ res.status(401).json(Response({statusCode:401, message:'you are not veryfied',st
 
         // Call userLogin service function
         const accessToken = await userLogin({ email, password, user });
+        
+      // Update the user's isLoggedIn status to true
+      await User.updateOne({ _id: user._id }, { isLoggedIn: true });
 
         //Success response
         res.status(200).json(Response({ statusCode: 200, message: 'Authentication successful', status: "OK", data: user, token: accessToken, type: "user" }));
@@ -303,6 +306,42 @@ const userBlocked=async(req,res,next)=>{
      }
 
 }
+
+// controllers/logoutController.js
+
+
+
+const logoutController = async (req, res, next) => {// Get the token from the request headers
+    const tokenWithBearer = req.headers.authorization;
+    let token;
+
+    if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+        // Extract the token without the 'Bearer ' prefix
+        token = tokenWithBearer.slice(7);
+    }
+
+    if (!token) {
+        return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
+    }
+
+    try {
+        // Verify the token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+       const user=await User.findById(decoded._id)
+        // Update user document to set isLoggedIn to false
+        await User.findByIdAndUpdate(user._id, { isLoggedIn: false });
+
+        // Respond with success message
+        res.status(200).json(Response({ statusCode: 200, message: 'you logout from this device.',status:'ok' }));
+    } catch (error) {
+        // Handle any errors
+        console.error('Logout error:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+
+
 module.exports = {
     signUp,
     signIn,
@@ -310,6 +349,7 @@ module.exports = {
     verifyCode,
     cahngePassword,
     resendOtp,
-    userBlocked
+    userBlocked,
+    logoutController
     
 };

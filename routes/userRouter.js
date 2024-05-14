@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 //import controllers
-const { signUp, signIn, forgotPassword, verifyCode, cahngePassword, resendOtp, userBlocked } = require('../controllers/userController');
+const { signUp, signIn, forgotPassword, verifyCode, cahngePassword, resendOtp, userBlocked, logoutController } = require('../controllers/userController');
 const upload = require('../middlewares.js/fileUpload');
 const { addVehicle } = require('../controllers/vehicalController');
 const { signUpBoutique } = require('../controllers/boutiqueController');
@@ -18,6 +18,8 @@ router.post('/verify-code', verifyCode);
 router.post('/change-password', cahngePassword);
 // if user want to diable Account
 router.post('/userBlocked', userBlocked);
+//logout route
+router.post('/logout',logoutController)
 // opt resend
 router.post("/resend",resendOtp)
 

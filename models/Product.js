@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Review = require('./Reviews');
 
 const productSchema = new mongoose.Schema({
     userId:{type:mongoose.Schema.Types.ObjectId,ref:"User", required:true},
@@ -19,7 +20,7 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    
+   
     
    
     images: [{
@@ -42,7 +43,7 @@ const productSchema = new mongoose.Schema({
         type: String,
         default: "0"
     },
-    reviews: [{type:mongoose.Schema.Types.ObjectId,ref:'Reviews',required:false}],
+    reviews: {type:String,required:false,default:"0"},
     wishlist: {
         type: Boolean,
         default: false

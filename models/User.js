@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema({
     
     isDeleted: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
+    isLoggedIn:{type:Boolean,default:false},
     // boutiqueImage: { type: Object, required: false, default: { publicFileURL: "images/users/user.png", path: "public\\images\\users\\user.png" } },
     image: { type: Object, required: false, default: { publicFileURL: "images/users/user.png", path: "public\\images\\users\\user.png" } },
     role: { type: String, required: false, enum: ["admin", "shopper", "boutique", "driver"],default:"shopper"  },
