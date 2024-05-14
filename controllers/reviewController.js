@@ -58,21 +58,7 @@ const jwt = require("jsonwebtoken");
         const saveReview =await Review.create(newReview)
         console.log(saveReview,"save revie")
         
-        // // Find the product by its ID
-        // const product = await Product.findById(req.params.id);
-
-        // if (!product) {
-        //     throw new Error('Product not found');
-        // }
-
-        // // Push the newly created review to the product's reviews array
-        // product.reviews.push(newReview);
-
-        // // Save the updated product
-        // await product.save();
-         // Update the product's reviews array with the new review's ID
-        //  await Product.findByIdAndUpdate(req.params.id, { $push: { reviews: saveReview._id } });
-        //  console.log(saveReview,"this is review id")
+      
        
         res.status(200).json(Response({ statusCode: 200, status: "ok", message: "review add successfully ",data:saveReview}));
     }catch(error){
@@ -87,8 +73,8 @@ const jwt = require("jsonwebtoken");
 
 try {
    // Find all reviews that reference the specified product ID
-   const reviews = await Review.find({ productId });
-   console.log(reviews)
+   const reviews = await Review.find({ProductId:productId}).populate('userId','name image');
+ 
    res.status(200).json(Response({ statusCode: 200, status: "ok", message: "you can see your product  ",data:reviews}));
 } catch (error) {
   // Handle any errors
