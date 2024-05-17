@@ -35,10 +35,20 @@ const productSchema = new mongoose.Schema({
     
    
     
-    color: [{
-      type:String, required:true
-    }],
-   size:[{type:String,required:true}],
+//     color: {
+//       type:[], required:true
+//     },
+//    size:[{type:String,required:true}],
+color: {
+    type: Array, // Array of strings
+    required: true,
+     // Default empty array if not provided
+},
+size: {
+    type: Array, // Array of strings
+    required: true,
+     // Default empty array if not provided
+},
     rating: {
         type: String,
         default: "0"

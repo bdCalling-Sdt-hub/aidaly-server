@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const createCategory = async (req, res, next) => {
     const { name } = req.body;
     const {categoryImage} = req.files;
-console.log(categoryImage,"this is un defiend")
+
 const files = [];
 if (req.files) {
     categoryImage.forEach((categoryImage) => {

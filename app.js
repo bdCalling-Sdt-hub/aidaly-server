@@ -10,6 +10,7 @@ var logger = require('morgan');
 const userRouter = require('./routes/userRouter');
 const productRouter=require('./routes/productRouter')
 const reviewRouter=require('./routes/reviewRouter')
+const wishlistRouter=require('./routes/wishlist')
 
 
 const { connectToDatabase } = require('./helpers/connection');
@@ -39,6 +40,7 @@ app.use('/api/v1/user', userRouter);
 // product
  app.use('/api/v1/product', productRouter);
  app.use('/api/v1/review',reviewRouter)
+ app.use('/api/v1/iswish',wishlistRouter)
 // test route
 app.get('/api/test', (req, res) => {
   res.send('I am responding!');

@@ -2,6 +2,7 @@ const Response = require("../helpers/response");
 const Product = require("../models/Product");
 const Review = require("../models/Reviews");
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
  
 
  const createRewiew=async (req, res, next)=>{
@@ -9,6 +10,7 @@ const jwt = require("jsonwebtoken");
     const { reviewImage } = req.files;
  
    const id=req.params.id
+
   
     const files = [];
     if (req.files) {
@@ -22,6 +24,7 @@ const jwt = require("jsonwebtoken");
         // console.log(files);
       });
     }
+    console.log(files)
   
     // Get the token from the request headers
     const tokenWithBearer = req.headers.authorization;
@@ -73,9 +76,24 @@ const jwt = require("jsonwebtoken");
 
 try {
    // Find all reviews that reference the specified product ID
-   const reviews = await Review.find({ProductId:productId}).populate('userId','name image');
- 
-   res.status(200).json(Response({ statusCode: 200, status: "ok", message: "you can see your product  ",data:reviews}));
+   const reviews = await Review.find({ProductId:productId}).populate('userId','name image ');
+   
+
+   if (reviews.length === 0) {
+    // If no reviews found for the product, return an error response
+    return res.status(404).json(Response({ statusCode: 404, message: 'Product not found.', status: 'error' }));
+}
+  
+const sumOfRatings = reviews.reduce((total, review) => total + parseInt(review.rating), 0);
+// Calculate the average rating
+const averageRating = sumOfRatings / reviews.length;
+
+
+
+const updatedProduct = await Product.findByIdAndUpdate(productId, { rating: averageRating }, { new: true });
+// await product.save()
+
+   res.status(200).json(Response({ statusCode: 200, status: "ok", message: "you can see your product  ",data:{reviews,updatedProduct}}));
 } catch (error) {
   // Handle any errors
        return res.status(500).json(Response({ statusCode: 500, message: 'Internal server error .',status:'server error' }));
@@ -83,8 +101,13 @@ try {
 
 
  }
+ const updateRatingForboutique=async(req,res,next)=>{
+
+
+ }
 
  module.exports={
     createRewiew,
-    showAllReciewForProduct
+    showAllReciewForProduct,
+    updateRatingForboutique
  }

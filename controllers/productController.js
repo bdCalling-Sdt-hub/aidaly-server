@@ -12,6 +12,8 @@ const productCreate = async (req, res, next) => {
     console.log(req.body);
     const { productName, category, inventoryQuantity,firstImage, color, size,price } = req.body;
     const { productImage1 } = req.files;
+
+
    
     const files = [];
     if (req.files) {
@@ -25,7 +27,7 @@ const productCreate = async (req, res, next) => {
         // console.log(files);
       });
     }
-    console.log(files,"new file")
+
 
     // Get the token from the request headers
     const tokenWithBearer = req.headers.authorization;
@@ -44,7 +46,7 @@ const productCreate = async (req, res, next) => {
         // Verify the token
         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-        console.log(decoded._id, "this role");
+     
 
         // Check if the user has the "boutique" role
         if (decoded.role !== "boutique") {
@@ -57,8 +59,8 @@ const productCreate = async (req, res, next) => {
             name: productName,
             category: category,
             inventoryQuantity: inventoryQuantity,
-            color: color,
-            size: size,
+            color: JSON.parse(color),
+            size: JSON.parse(size),
             price:price,
             images:files,
             firstImage:files[0],
@@ -69,6 +71,7 @@ const productCreate = async (req, res, next) => {
 
         // Save the new product document to the database
         const savedProduct = await newProduct.save();
+        console.log(savedProduct)
 
         // After 5 minutes, update isArrival to false
         setTimeout(async () => {
@@ -147,11 +150,12 @@ const allProducts=async(_req,res,next)=>{
 const showProductByCategory = async (req, res, next) => {
     try{
         const category = req.params.category;
+        console.log(category)
       
     
         const products = await Product.find({ category: category }).populate('userId','name image');
     
-        res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:{products,csometic} }));
+        res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:{products} }));
     } catch (error) {
               // Handle any errors
               return res.status(500).json(Response({ statusCode: 500, message: 'Internal server error.',status:'server error' })); next(error);
@@ -166,7 +170,8 @@ const ProductDetails=async(req,res,next)=>{
     
     try {
 
-        const product=await Product.findById(id)
+        const product=await Product.findById(id).populate('userId','name image');
+        
         res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:{product} }));
     } catch (error) {
          // Handle any errors
