@@ -2,7 +2,7 @@
 const Response = require("../helpers/response");
 const User = require("../models/User");
 const { userRegister } = require("../services/userService");
-
+const jwt = require("jsonwebtoken");
 // sign up boutique
 const signUpBoutique = async (req, res) => {
     try {
@@ -69,7 +69,66 @@ console.log(image,files)
         res.status(500).json({ error: "Server error" });
     }
 };
+const updateProfileOfboutique=async(req,res,next)=>{
+    const {name,email,phone,address,rate, city,state,}=req.body
+
+    const { image } = req.files || {};
+const files = [];
+
+// Check if there are uploaded files
+if (image && Array.isArray(image)) {
+    image.forEach((img) => {
+        const publicFileUrl = `/images/users/${img.filename}`;
+        files.push({
+            publicFileUrl,
+            path: img.filename,
+        });
+    });
+}
+   
+
+    const tokenWithBearer = req.headers.authorization;
+    let token;
+
+    if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+        // Extract the token without the 'Bearer ' prefix
+        token = tokenWithBearer.slice(7);
+    }
+
+    if (!token) {
+        return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
+    }
+
+    try {
+        // Verify the token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+       const user=await User.findById(decoded._id)
+       
+        // Assuming you have some user data in req.body that needs to be updated
+        user.name = name || user.name;
+        user.email = email || user.email;
+        user.phone=phone ||user.phone;
+        user.address=address|| user.address;
+        user.city=city|| user.city;
+        user.state=state ||user.state
+        user.image=files[0]|| user.image;
+        user.rate=rate|| user.rate
+        
+
+        // Save the updated user profile
+       const users= await user.save();
+
+        // Respond with success message
+        res.status(200).json(Response({ statusCode: 200, message: 'Profile updated successfully.', status: 'success',data:users}));
+
+    }catch(error){
+        res.status(500).json(Response({ statusCode: 500, message: 'internal server error.',status:'Failed' }));
+    }
+
+
+}
 
 module.exports = {
     signUpBoutique,
+    updateProfileOfboutique
 };

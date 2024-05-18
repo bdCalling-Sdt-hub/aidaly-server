@@ -5,7 +5,7 @@ const router = express.Router();
 const { signUp, signIn, forgotPassword, verifyCode, cahngePassword, resendOtp, userBlocked, logoutController, updateProfile } = require('../controllers/userController');
 const upload = require('../middlewares.js/fileUpload');
 const { addVehicle } = require('../controllers/vehicalController');
-const { signUpBoutique } = require('../controllers/boutiqueController');
+const { signUpBoutique, updateProfileOfboutique } = require('../controllers/boutiqueController');
 const { createLocation, getLocations, getLocationById, updateLocation } = require('../controllers/locationController');
 
 console.log('userController');
@@ -30,6 +30,7 @@ router.patch('/updateProfile', upload ,updateProfile)
 router.post('/vehicalDetails', upload, addVehicle);
 // boutique signup route 
 router.post('/signUp-Boutique', upload, signUpBoutique);
+router.patch('/updateProfile-Boutique', upload, updateProfileOfboutique);
 // location 
 router.post('/locations',createLocation);
 router.get('/locations',getLocations);
