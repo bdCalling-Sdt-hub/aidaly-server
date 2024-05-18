@@ -8,9 +8,20 @@ const signUpBoutique = async (req, res) => {
     try {
         const { name, email, password, address, rate,  city, state, description } = req.body;
       
-      const {image}=req.files;
-      console.log(image)
-
+        const {image} = req.files;
+      const files = [];
+      if (req.files) {
+          image.forEach((image) => {
+          const publicFileUrl = `/images/users/${image.filename}`;
+          
+          files.push({
+            publicFileUrl,
+            path: image.filename,
+          });
+          // console.log(files);
+        });
+      }
+console.log(image,files)
 
         // Validate request body
         if (!name) {
@@ -43,9 +54,9 @@ const signUpBoutique = async (req, res) => {
             role: "boutique",
             description
         };
- // Check if image is provided in the request
- if (image && image.length > 0) {
-    userDetails.image = image[0];
+  // Check if image is provided in the request
+  if (files && files.length > 0) {
+    userDetails.image = files[0];
 }
         // Call service function to register user
         await userRegister(userDetails);

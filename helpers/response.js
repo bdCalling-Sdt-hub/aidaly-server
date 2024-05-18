@@ -3,7 +3,8 @@ const Response = (response = {}) => {
         "status": response.status,
         "statusCode": response.statusCode,
         "message": response.message,
-        "data": {}
+        "data": {},
+        "pagination":{}
     };
 
     if (response.type) {
@@ -12,6 +13,9 @@ const Response = (response = {}) => {
 
     if (response.data) {
         responseObject.data.attributes = response.data;
+    }
+    if (response.pagination) {
+        responseObject.pagination.attributes = response.pagination;
     }
 
     if (response.token) {

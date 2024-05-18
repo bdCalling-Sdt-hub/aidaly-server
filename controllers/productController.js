@@ -1,4 +1,5 @@
 
+const pagination = require("../helpers/pagination");
 const Response = require("../helpers/response");
 const Category = require("../models/Category");
 const Product = require("../models/Product");
@@ -9,7 +10,7 @@ const slugify = require('slugify');
 // create product
 
 const productCreate = async (req, res, next) => {
-    console.log(req.body);
+    
     const { productName, category, inventoryQuantity,firstImage, color, size,price } = req.body;
     const { productImage1 } = req.files;
 
@@ -71,7 +72,7 @@ const productCreate = async (req, res, next) => {
 
         // Save the new product document to the database
         const savedProduct = await newProduct.save();
-        console.log(savedProduct)
+     
 
         // After 5 minutes, update isArrival to false
         setTimeout(async () => {
@@ -112,8 +113,13 @@ const showProductByUser=async(req,res,next)=>{
       const boutique=await User.findById(decoded._id)
 
          const allProductForUser = await Product.find({userId: decoded._id });
-        
+       
 
+        const sumOfRatings = allProductForUser.reduce((total, review) => total + parseInt(review.rating), 0);
+        // Calculate the average rating
+        const averageRating = sumOfRatings / allProductForUser.length;
+        console.log(averageRating.toFixed(2),sumOfRatings,"some reting")
+        
            // For demonstration purposes, I'm just sending a success response
         res.status(200).json(Response({ statusCode: 200, status: "ok", message: "showed all product for the boutique",data:{boutique,allProductForUser} }));
     } catch (error) {
@@ -148,14 +154,28 @@ const allProducts=async(_req,res,next)=>{
 
 }
 const showProductByCategory = async (req, res, next) => {
+      // for pagination 
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+  
     try{
         const category = req.params.category;
         console.log(category)
       
+        const totalProducts = await Product.find({ category: category  }).countDocuments();
+        
+        const products = await Product.find({ category: category }).populate('userId','name image')
+        .skip((page - 1) * limit)
+        .limit(limit);
+     const paginationOfProduct= pagination(totalProducts,limit,page)
+        // response 
+        res.status(200).json(Response({
+            message: "retrive product  successfully by catagory",
+            data: products,
+            pagination:paginationOfProduct
+        }));
     
-        const products = await Product.find({ category: category }).populate('userId','name image');
-    
-        res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:{products} }));
+        // res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:{products} }));
     } catch (error) {
               // Handle any errors
               return res.status(500).json(Response({ statusCode: 500, message: 'Internal server error.',status:'server error' })); next(error);
@@ -181,10 +201,51 @@ const ProductDetails=async(req,res,next)=>{
 
 }
 
+const showProductByUserId=async(req,res,next)=>{
+    const id=req.params.id
+    // for pagination 
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 1;
+    
+    try {
+        const user=await User.findById(id)
+        if(!user){
+            res.status(400).json(Response({ statusCode: 200, status: "bad request", message: "user not found", }));
+        }
+        const boutiqueUser={
+            name:user.name,
+            image:user.image,
+            description:user.description,
+            rate:user.rate,
+
+
+        }
+        const totalProducts = await Product.find({ userId: id }).countDocuments();
+        // const totalPages = Math.ceil(totalProducts / perPage);
+
+        const products = await Product.find({ userId: id })
+            .skip((page - 1) * limit)
+            .limit(limit);
+            // call the pagination
+            const paginationOfProduct= pagination(totalProducts,limit,page)
+            res.status(200).json(Response({
+                message: "Events retrieved successfully",
+                data: {boutiqueUser,products},
+                pagination: paginationOfProduct
+            }));
+            
+    } catch (error) {
+       // Handle any errors
+       return res.status(500).json(Response({ statusCode: 500, message: 'Internal server error.',status:'server error' })); 
+         
+    }
+}
+
 
 module.exports = {
     productCreate,
     showProductByUser,
     allProducts,
-    showProductByCategory
+    showProductByCategory,
+    showProductByUserId
 ,ProductDetails};
