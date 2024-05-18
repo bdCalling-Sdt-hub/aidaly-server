@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 //import controllers
-const { signUp, signIn, forgotPassword, verifyCode, cahngePassword, resendOtp, userBlocked, logoutController } = require('../controllers/userController');
+const { signUp, signIn, forgotPassword, verifyCode, cahngePassword, resendOtp, userBlocked, logoutController, updateProfile } = require('../controllers/userController');
 const upload = require('../middlewares.js/fileUpload');
 const { addVehicle } = require('../controllers/vehicalController');
 const { signUpBoutique } = require('../controllers/boutiqueController');
@@ -22,6 +22,8 @@ router.post('/userBlocked', userBlocked);
 router.post('/logout',logoutController)
 // opt resend
 router.post("/resend",resendOtp)
+// update profile
+router.patch('/updateProfile', upload ,updateProfile)
 
 // router.post('/vehicalDetails/:userId',upload.array["image",3],addVehicle)
 

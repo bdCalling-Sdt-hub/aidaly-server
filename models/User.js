@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema({
     address: { type: String, required: false },
     city: { type: String, required: false },
     rate:{type:String,required:false},
+    rating:{type:String,required:false,default:"0"},
     description:{type:String,required:false},
     state: { type: String, required: false},
     privacyPolicyAccepted: { type: Boolean, default: false, required: false },

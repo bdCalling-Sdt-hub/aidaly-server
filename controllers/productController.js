@@ -11,7 +11,7 @@ const slugify = require('slugify');
 
 const productCreate = async (req, res, next) => {
     
-    const { productName, category, inventoryQuantity,firstImage, color, size,price } = req.body;
+    const { productName, category, inventoryQuantity, color, size,price } = req.body;
     const { productImage1 } = req.files;
 
 
@@ -110,18 +110,17 @@ const showProductByUser=async(req,res,next)=>{
  
         
  
-      const boutique=await User.findById(decoded._id)
 
          const allProductForUser = await Product.find({userId: decoded._id });
        
 
-        const sumOfRatings = allProductForUser.reduce((total, review) => total + parseInt(review.rating), 0);
-        // Calculate the average rating
-        const averageRating = sumOfRatings / allProductForUser.length;
-        console.log(averageRating.toFixed(2),sumOfRatings,"some reting")
+        // const sumOfRatings = allProductForUser.reduce((total, review) => total + parseInt(review.rating), 0);
+        // // Calculate the average rating
+        // const averageRating = sumOfRatings / allProductForUser.length;
+
         
            // For demonstration purposes, I'm just sending a success response
-        res.status(200).json(Response({ statusCode: 200, status: "ok", message: "showed all product for the boutique",data:{boutique,allProductForUser} }));
+        res.status(200).json(Response({ statusCode: 200, status: "ok", message: "showed all product for the boutique",data:allProductForUser }));
     } catch (error) {
         console.log(error);
         // Handle any errors
@@ -157,13 +156,15 @@ const showProductByCategory = async (req, res, next) => {
       // for pagination 
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
+     
   
     try{
         const category = req.params.category;
         console.log(category)
       
         const totalProducts = await Product.find({ category: category  }).countDocuments();
-        
+
+      
         const products = await Product.find({ category: category }).populate('userId','name image')
         .skip((page - 1) * limit)
         .limit(limit);
@@ -216,17 +217,44 @@ const showProductByUserId=async(req,res,next)=>{
             name:user.name,
             image:user.image,
             description:user.description,
-            rate:user.rate,
+            rating:user.rating,
 
 
         }
+       
         const totalProducts = await Product.find({ userId: id }).countDocuments();
         // const totalPages = Math.ceil(totalProducts / perPage);
+        const productOfUpdate = await Product.find({ userId: id })
+
+// Filter out products with ratings (excluding those with rating "0")
+const ratedProducts = productOfUpdate.filter(product => product.rating !== '0');
+
+// Calculate total rating and count of rated products
+let totalRating = 0;
+let ratedProductCount = 0;
+for (const productOfUpdate of ratedProducts) {
+    totalRating += parseFloat(productOfUpdate.rating);
+    ratedProductCount++;
+}
+
+// Calculate average rating
+const averageRating = ratedProductCount > 0 ? totalRating / ratedProductCount : 0;
+// Convert average rating to a floating-point number with one decimal place
+const formattedRating = parseFloat(averageRating.toFixed(1));
+// Update user's rating
+ user.rating = formattedRating;
+
+await user.save();
 
         const products = await Product.find({ userId: id })
             .skip((page - 1) * limit)
             .limit(limit);
+
+            
+
+
             // call the pagination
+
             const paginationOfProduct= pagination(totalProducts,limit,page)
             res.status(200).json(Response({
                 message: "Events retrieved successfully",
