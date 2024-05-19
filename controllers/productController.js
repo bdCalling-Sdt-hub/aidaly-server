@@ -246,7 +246,7 @@ const formattedRating = parseFloat(averageRating.toFixed(1));
 
 await user.save();
 
-        const products = await Product.find({ userId: id })
+        const products = await Product.find({ userId: id }).populate('userId','name image')
             .skip((page - 1) * limit)
             .limit(limit);
 

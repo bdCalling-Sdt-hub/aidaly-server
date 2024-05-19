@@ -11,6 +11,7 @@ const userRouter = require('./routes/userRouter');
 const productRouter=require('./routes/productRouter')
 const reviewRouter=require('./routes/reviewRouter')
 const wishlistRouter=require('./routes/wishlist')
+const cardRouter=require('./routes/cardRouter')
 
 
 const { connectToDatabase } = require('./helpers/connection');
@@ -41,6 +42,7 @@ app.use('/api/v1/user', userRouter);
  app.use('/api/v1/product', productRouter);
  app.use('/api/v1/review',reviewRouter)
  app.use('/api/v1/iswish',wishlistRouter)
+ app.use('/api/v1/card',cardRouter)
 // test route
 app.get('/api/test', (req, res) => {
   res.send('I am responding!');
