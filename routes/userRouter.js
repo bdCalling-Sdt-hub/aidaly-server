@@ -35,5 +35,5 @@ router.patch('/updateProfile-Boutique', upload, updateProfileOfboutique);
 router.post('/locations',createLocation);
 router.get('/locations',getLocations);
 router.get('/locations/:id',getLocationById);
-router.put('/location/:id',updateLocation);
+router.put('/updateLocation',updateLocation);
 module.exports = router;

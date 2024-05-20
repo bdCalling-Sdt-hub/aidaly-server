@@ -160,12 +160,27 @@ const showProductByCategory = async (req, res, next) => {
   
     try{
         const category = req.params.category;
-        console.log(category)
-      
-        const totalProducts = await Product.find({ category: category  }).countDocuments();
+        
+if(category==="new-arrivals"){
+    const productNewArivel = await Product.find({ isNewArrivel: true }).populate('userId','name image')
+    .skip((page - 1) * limit)
+    .limit(limit);
+    const totalProducts = await Product.find({ isNewArrivel: true }).countDocuments()
+    const paginationOfProduct= pagination(totalProducts,limit,page)
+    // response 
+    res.status(200).json(Response({
+        message: "retrive product  successfully by catagory",
+        data: productNewArivel,
+        pagination:paginationOfProduct
+    }));
+    console.log(productNewArivel,"product is ")
+}
+    
+     
+        const totalProducts = await Product.find({ category: category,isNewArrivel:false  }).countDocuments();
 
       
-        const products = await Product.find({ category: category }).populate('userId','name image')
+        const products = await Product.find({ category: category,isNewArrivel:false }).populate('userId','name image')
         .skip((page - 1) * limit)
         .limit(limit);
      const paginationOfProduct= pagination(totalProducts,limit,page)
@@ -191,7 +206,7 @@ const ProductDetails=async(req,res,next)=>{
     
     try {
 
-        const product=await Product.findById(id).populate('userId','name image');
+        const product=await Product.findById(id).populate('userId');
         
         res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:{product} }));
     } catch (error) {
@@ -246,7 +261,7 @@ const formattedRating = parseFloat(averageRating.toFixed(1));
 
 await user.save();
 
-        const products = await Product.find({ userId: id }).populate('userId','name image')
+        const products = await Product.find({ userId: id }).populate('userId','name, image')
             .skip((page - 1) * limit)
             .limit(limit);
 

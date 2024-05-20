@@ -166,7 +166,7 @@ res.status(401).json(Response({statusCode:401, message:'you are not veryfied',st
 
         // Check if the user is banned
         if (user.isBlocked) {
-            return res.status(401).json(Response({ statusCode: 401, message: 'You are blocked', status: "Failed" }));
+            return res.status(401).json(Response({ statusCode: 401, message: 'sorry your account  blocked', status: "Failed" }));
         }
            
         // Compare the provided password with the stored hashed password

@@ -36,6 +36,19 @@ const AddCard=async(req,res,next)=>{
     }
 
 }
+
+const showCard=async(req,res,nextt)=>{
+    try {
+        const allCards=await Card.find()
+        res.status(200).json(Response({statusCode:200,status:"ok",message:"card showed successfully",data:allCards
+    }))
+        
+    } catch (error) {
+        res.status(500).json(Response({statusCode:500,message:error.message,status:"failed"}))
+        
+    }
+}
 module.exports={
-    AddCard
+    AddCard,
+    showCard
 }

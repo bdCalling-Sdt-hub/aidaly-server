@@ -3,26 +3,15 @@ const Schema = mongoose.Schema;
 
 // Define the Order schema
 const OrderSchema = new Schema({
-    user: { 
-        type: Schema.Types.ObjectId, 
+    userId: { 
+        type: mongoose.Schema.Types.ObjectId, 
         ref: 'User', 
         required: true 
     },
-    items: [{
-        product: { 
-            type: Schema.Types.ObjectId, 
-            ref: 'Product', 
-            required: true 
-        },
-        quantity: { 
-            type: Number, 
-            required: true 
-        },
-        price: { 
-            type: Number, 
-            required: true 
-        }
-    }],
+    items:{
+        type:Object,
+        required:true
+    },
     totalAmount: { 
         type: Number, 
         required: true 
@@ -37,9 +26,8 @@ const OrderSchema = new Schema({
         required: true 
     },
     paymentMethod: { 
-        type: String, 
-        
-        required: true 
+        tranjectionId:{type:String,required:true},
+        methodName:{type:String,required:true} 
     },
     paymentStatus: { 
         type: String, 
@@ -48,7 +36,7 @@ const OrderSchema = new Schema({
     },
     createdAt: { 
         type: Date, 
-        default: Date.now 
+        default: Date
     },
     updatedAt: { 
         type: Date, 

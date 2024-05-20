@@ -7,24 +7,25 @@ const reviewSchema = new mongoose.Schema({
     
     height: {
         type: String, // Assuming height is in centimeters
-        required: true
+        required: false
     },
     weight: {
         type: String, // Assuming weight is in kilograms
-        required: true
+        required: false
     },
     reviewImage: [{
         type: Object, // Assuming image URLs are strings
-        required: true
+        required: false
     }],
     rating: {
         type: String, // Assuming stars range from 1 to 5
-        required: true,
+        required: false,
         min: 1,
         max: 5
     },
     reviews: {
-        type: String // Assuming comment is optional
+        type: String, // Assuming comment is optional
+        required:false
     }
 });
 

@@ -19,6 +19,8 @@ const userSchema = new mongoose.Schema({
         set: (v) => bcrypt.hashSync(v, bcrypt.genSaltSync(10))
     },
     dateOfBirth: { type: String, required: false},
+    // currentLocation:{type:mongoose.Schema.Types.ObjectId,ref:"Location", required:false},
+    currentLocation:{type:Object,required:false},
     phone: { type: String, required: false },
     address: { type: String, required: false },
     city: { type: String, required: false },

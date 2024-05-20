@@ -8,24 +8,43 @@ const pagination = require("../helpers/pagination");
 
  const createRewiew=async (req, res, next)=>{
     const { rating, height, weight,reviews } = req.body;
-    const { reviewImage } = req.files;
+  //   const { reviewImage } = req.files;
  
-   const id=req.params.id
+  //  const id=req.params.id
+
+
 
   
-    const files = [];
-    if (req.files) {
-        reviewImage.forEach((reviewImage) => {
-        const publicFileUrl = `/images/users/${reviewImage.filename}`;
+  //   const files = [];
+  //   if (req.files) {
+  //       reviewImage.forEach((reviewImage) => {
+  //       const publicFileUrl = `/images/users/${reviewImage.filename}`;
         
+  //       files.push({
+  //         publicFileUrl,
+  //         path: reviewImage.filename,
+  //       });
+  //       // console.log(files);
+  //     });
+  //   }
+  //   console.log(files)
+  const { reviewImage } = req.files;
+const id = req.params.id;
+
+const files = [];
+
+if (reviewImage && reviewImage.length > 0) {
+    reviewImage.forEach((image) => {
+        const publicFileUrl = `/images/users/${image.filename}`;
         files.push({
-          publicFileUrl,
-          path: reviewImage.filename,
+            publicFileUrl,
+            path: image.filename,
         });
-        // console.log(files);
-      });
-    }
-    console.log(files)
+    });
+}
+
+console.log(files);
+
   
     // Get the token from the request headers
     const tokenWithBearer = req.headers.authorization;
@@ -99,9 +118,14 @@ try {
 
    if (reviews.length === 0) {
     // If no reviews found for the product, return an error response
-    return res.status(404).json(Response({ statusCode: 404, message: 'Product dosent have review yet.', status: 'error' }));
+    return res.status(200).json(Response({ statusCode: 200, message: 'Product dosent have review yet.', status: 'ok' }));
 }
   
+// if (reviews.length === 0) {
+//   // If no reviews found for the product, return a 204 No Content response
+//   return res.status(204).send();
+// }
+
 const sumOfRatings = reviews.reduce((total, review) => total + parseInt(review.rating), 0);
 // Calculate the average rating
 const averageRating = sumOfRatings / reviews.length;
@@ -126,6 +150,58 @@ const averageRating = sumOfRatings / reviews.length;
 
 
  }
+// const showAllReciewForProduct = async (req, res, next) => {
+//   const productId = req.params.id;
+//   // For pagination
+//   const page = parseInt(req.query.page) || 1;
+//   const limit = parseInt(req.query.limit) || 10;
+
+//   try {
+//     const isProduct = await Product.findById(productId);
+//     if (!isProduct) {
+//       return res.status(404).json(Response({ statusCode: 404, message: 'Product not found', status: 'failed' }));
+//     }
+
+//     // Find all reviews that reference the specified product ID
+//     const reviews = await Review.find({ ProductId: productId })
+//       .populate('userId', 'name image')
+//       .skip((page - 1) * limit)
+//       .limit(limit);
+
+//     const totalReviews = await Review.find({ ProductId: productId }).countDocuments();
+
+//     // Check if there are reviews
+//     if (reviews.length === 0) {
+//       return res.status(200).json(Response({
+//         message: "No reviews for this product yet.",
+//         data: [],
+//         pagination: pagination(totalReviews, limit, page)
+//       }));
+//     }
+// console.log(totalReviews,"total review")
+//     // Calculate the average rating if there are reviews
+//     const sumOfRatings = reviews.reduce((total, review) => total + parseInt(review.rating), 0);
+//     const averageRating = sumOfRatings / reviews.length;
+
+//     // Update the product's average rating
+//     await Product.findByIdAndUpdate(productId, { rating: averageRating.toFixed(2) }, { new: true });
+
+//     // Call the pagination
+//     const paginationOfProduct = pagination(totalReviews, limit, page);
+
+//     // Response
+//     res.status(200).json(Response({
+//       message: "Retrieve product reviews successfully",
+//       data: reviews,
+//       pagination: paginationOfProduct
+//     }));
+
+//   } catch (error) {
+//     // Handle any errors
+//     return res.status(500).json(Response({ statusCode: 500, message: 'Internal server error.', status: 'server error' }));
+//   }
+// };
+
  const updateRatingForboutique=async(req,res,next)=>{
    // Get the token from the request headers
    const tokenWithBearer = req.headers.authorization;
