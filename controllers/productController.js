@@ -152,47 +152,123 @@ const allProducts=async(_req,res,next)=>{
 
 
 }
-const showProductByCategory = async (req, res, next) => {
-      // for pagination 
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 10;
+// const showProductByCategory = async (req, res, next) => {
+//       // for pagination 
+//       const page = parseInt(req.query.page) || 1;
+//       const limit = parseInt(req.query.limit) || 10;
      
   
-    try{
-        const category = req.params.category;
+//     try{
+//         const category = req.params.category;
         
-if(category==="new-arrivals"){
-    const productNewArivel = await Product.find({ isNewArrivel: true }).populate('userId','name image')
-    .skip((page - 1) * limit)
-    .limit(limit);
-    const totalProducts = await Product.find({ isNewArrivel: true }).countDocuments()
-    const paginationOfProduct= pagination(totalProducts,limit,page)
-    // response 
-    res.status(200).json(Response({
-        message: "retrive product  successfully by catagory",
-        data: productNewArivel,
-        pagination:paginationOfProduct
-    }));
-    console.log(productNewArivel,"product is ")
-}
+//      // i can do two way in this field with catogory or isNewArrivel: true only   
+// if(category==="new-arrivals"){
+//     const productNewArivel = await Product.find({ category: category, isNewArrivel: { $in: [true, false] } })
+//     .populate('userId', 'name image isBlocked')
+//     const result=productNewArivel.filter((product)=>!product.userId.isBlocked)
+//    console.log(result.length)
+   
+
+//     const totalProducts = await Product.find({ category: category,isNewArrivel: { $in: [true, false]} }).countDocuments()
+//     const paginationOfProduct= pagination(result.length,limit,page)
+//     // response 
+//     res.status(200).json(Response({
+//         message: "retrive product  successfully by catagory",
+//         data: result,
+//         pagination:paginationOfProduct
+//     }));
+//     console.log(productNewArivel,"product is ")
+// }else{
+
+
     
      
-        const totalProducts = await Product.find({ category: category,isNewArrivel:false  }).countDocuments();
+//         const totalProducts = await Product.find({ category: category,isNewArrivel:false  }).countDocuments();
 
       
-        const products = await Product.find({ category: category,isNewArrivel:false }).populate('userId','name image')
-        .skip((page - 1) * limit)
-        .limit(limit);
-     const paginationOfProduct= pagination(totalProducts,limit,page)
-        // response 
-        res.status(200).json(Response({
-            message: "retrive product  successfully by catagory",
-            data: products,
-            pagination:paginationOfProduct
-        }));
+//         const products = await Product.find({ category: category,isNewArrivel:false }).populate('userId','name image isBlocked')
+//         .skip((page - 1) * limit)
+//         .limit(limit);
+//      const paginationOfProduct= pagination(totalProducts,limit,page)
+//         // response 
+//         res.status(200).json(Response({
+//             message: "retrive product  successfully by catagory",
+//             data: products,
+//             pagination:paginationOfProduct
+//         }));}
     
-        // res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:{products} }));
-    } catch (error) {
+//         // res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:{products} }));
+//     } catch (error) {
+    const showProductByCategory = async (req, res, next) => {
+        // for pagination 
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        
+        try {
+          const category = req.params.category;
+          let products = [];
+          let totalProducts = 0;
+      
+          // Handle "new-arrivals" category
+          if (category === "new-arrivals") {
+            // Find products with category "new-arrivals"
+            const productNewArrivals = await Product.find({ category: category, isNewArrivel: { $in: [true, false] }})
+              .populate('userId', 'name image isBlocked');
+      
+            // Filter out products with blocked users
+            const filteredProducts = productNewArrivals.filter(product => !product.userId.isBlocked);
+            totalProducts = filteredProducts.length;
+      
+            // Implement pagination on filtered products
+            const startIndex = (page - 1) * limit;
+            products = filteredProducts.slice(startIndex, startIndex + limit);
+      
+            const paginationOf= pagination(totalProducts,limit,page)
+            // Calculate pagination information
+            const paginationOfProduct = {
+              totalItems: totalProducts,
+              totalPages: Math.ceil(totalProducts / limit),
+              currentPage: page,
+              pageSize: limit
+            };
+      
+            // Response
+            res.status(200).json(Response({
+              message: "Retrieved products successfully by category",
+              data: products,
+              pagination: paginationOf
+            }));
+      
+          } else {
+            // Find the total number of products in the specified category (excluding blocked users)
+            const allProductsInCategory = await Product.find({ category, isNewArrivel: false })
+              .populate('userId', 'name image isBlocked');
+            const unblockedProductsInCategory = allProductsInCategory.filter(product => !product.userId.isBlocked);
+            totalProducts = unblockedProductsInCategory.length;
+      
+            // Implement pagination on unblocked products in the specified category
+            const startIndex = (page - 1) * limit;
+            products = unblockedProductsInCategory.slice(startIndex, startIndex + limit);
+      
+            // Calculate pagination information
+            const paginationOfProduct = {
+              totalItems: totalProducts,
+              totalPages: Math.ceil(totalProducts / limit),
+              currentPage: page,
+              pageSize: limit
+            };
+            const paginationOf= pagination(totalProducts,limit,page)
+            // Response
+            res.status(200).json(Response({
+              message: "Retrieved products successfully by category",
+              data: products,
+              pagination: paginationOf
+            }));
+          }
+      
+        } catch (error) {
+          //
+      
               // Handle any errors
               return res.status(500).json(Response({ statusCode: 500, message: 'Internal server error.',status:'server error' })); next(error);
     }

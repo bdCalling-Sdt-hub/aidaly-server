@@ -105,7 +105,7 @@ console.log(files);
 try {
    const isProduct=await Product.findById(productId)
    if(!isProduct){
-     return res.status(404).json(Response({ statusCode: 401, message: 'you dont have any product',status:'faield' }));
+     return res.status(404).json(Response({ statusCode: 404, message: 'you dont have any product',status:'faield' }));
    }
    
    // Find all reviews that reference the specified product ID
@@ -118,7 +118,7 @@ try {
 
    if (reviews.length === 0) {
     // If no reviews found for the product, return an error response
-    return res.status(200).json(Response({ statusCode: 200, message: 'Product dosent have review yet.', status: 'ok' }));
+    return res.status(404).json(Response({ statusCode: 404, message: 'Product dosent have review yet.', status: 'not found' }));
 }
   
 // if (reviews.length === 0) {

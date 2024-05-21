@@ -1,21 +1,26 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+
 
 // Define the Order schema
-const OrderSchema = new Schema({
+const OrderSchema = new mongoose.Schema({
+    orderId:{type:String,required:true},
     userId: { 
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'User', 
         required: true 
     },
-    items:{
-        type:Object,
-        required:true
+    orderItems:{
+       type:mongoose.Schema.Types.ObjectId,
+       ref:'OrderItem',
+       required:false
     },
     totalAmount: { 
-        type: Number, 
+        type: String, 
         required: true 
     },
+    serviceFee:{type:String,required:true},
+    shippingFee:{type:String,required:true},
+    tips:{type:String,required:true},
     status: { 
         type: String, 
         enum: ['neworder', 'inprogress', 'assigned', 'delivered', 'cancelled'], 
@@ -24,15 +29,20 @@ const OrderSchema = new Schema({
     deliveryAddress: { 
         type: String, 
         required: true 
-    },
+    }, 
     paymentMethod: { 
-        tranjectionId:{type:String,required:true},
+        transectionId:{type:String,required:true},
         methodName:{type:String,required:true} 
     },
     paymentStatus: { 
         type: String, 
         enum: ['pending', 'completed', 'failed'], 
         default: 'pending' 
+    },
+    assignedDriver: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Driver",
+        default: null // Default value is null
     },
     createdAt: { 
         type: Date, 
@@ -44,16 +54,16 @@ const OrderSchema = new Schema({
     }
 });
 
-// Define a virtual field to calculate the total quantity of items in the order
-OrderSchema.virtual('totalItems').get(function() {
-    return this.items.reduce((total, item) => total + item.quantity, 0);
-});
+// // Define a virtual field to calculate the total quantity of items in the order
+// OrderSchema.virtual('totalItems').get(function() {
+//     return this.items.reduce((total, item) => total + item.quantity, 0);
+// });
 
-// Define a pre-save hook to update the 'updatedAt' field
-OrderSchema.pre('save', function(next) {
-    this.updatedAt = new Date();
-    next();
-});
+// // Define a pre-save hook to update the 'updatedAt' field
+// OrderSchema.pre('save', function(next) {
+//     this.updatedAt = new Date();
+//     next();
+// });
 
 // Create the Order model
 const Order = mongoose.model('Order', OrderSchema);

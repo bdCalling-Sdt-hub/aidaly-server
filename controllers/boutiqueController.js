@@ -25,20 +25,20 @@ console.log(image,files)
 
         // Validate request body
         if (!name) {
-            return res.status(400).json({ message: "Name is required" });
+            return res.status(400).json(Response({statusCode:400,status:"name required", message: "Name is required" }));
         }
 
         if (!email) {
-            return res.status(400).json({ message: "Email is required" });
+            return res.status(400).json(Response({status:"email ",statusCode:400, message: "Email is required" }));
         }
 
         if (!password) {
-            return res.status(400).json({ message: "Password is required" });
+            return res.status(400).json(Response({status:"password faild",statusCode:400, message: "Password is required" }));
         }
 
         const user = await User.findOne({ email });
         if (user) {
-            return res.status(400).json({ message: "User already exists" });
+            return res.status(400).json(Response({ status:"faild",statusCode:400, message: "User already exists" }));
         }
 
         const userDetails = {

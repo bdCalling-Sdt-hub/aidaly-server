@@ -50,7 +50,7 @@ console.log(token)
     await User.findByIdAndUpdate(decoded._id,{currentLocation:locations},{new:true})
 
 
-    res.status(200).json(Response({data:{},message:"location created ",status:"ok",statusCode:200,data:locations}));
+    res.status(200).json(Response({message:"location created ",status:"ok",statusCode:200,data:locations}));
   } catch (err) {
     console.error('Error creating location:', err);
     res.status(500).json({ error: 'Error creating location' });
@@ -60,7 +60,7 @@ console.log(token)
 const getLocations = async (req, res) => {
   try {
     const locations = await Location.find();
-    res.json(locations);
+    res.status(200).json(Response({message:"get location", statusCode:200,data:locations,status:"ok"}));
   } catch (err) {
     console.error('Error fetching locations:', err);
     res.status(500).json({ error: 'Error fetching locations' });
@@ -90,7 +90,7 @@ const getLocationById = async (req, res) => {
   }
 
   if (!token) {
-      return res.status(401).json({ success: false, message: 'Token is missing.' });
+      return res.status(401).json(Response({statusCode:401, status: "faield", message: 'Token is missing.' }));
   }
 
   try {
@@ -104,13 +104,13 @@ const getLocationById = async (req, res) => {
         // Check if the user has already created a location
         const existingLocation = await Location.findOne({ userId: decoded._id });
         if (existingLocation) {
-            return res.status(400).json({ success: false, message: 'User has already created a location.' });
+            return res.status(400).json(Response({ status: "faild",statusCode:400, message: 'User has already created a location.' }));
         }
 
     const location = await User.findById(decoded._id);
     console.log(location,existingLocation)
     if (!location) {
-      return res.status(404).json({ error: 'Location not found' });
+      return res.status(404).json(Response({ status:"not found",statusCode:400, message: 'Location not found' }));
     }
     res.json(location);
   } catch (err) {
@@ -146,12 +146,12 @@ console.log(token)
     console.log(latitude,longitude)
     const location = await Location.findByIdAndUpdate({userId:decoded._id}, { latitude, longitude }, { new: true });
     if (!location) {
-      return res.status(404).json({ error: 'Location not found' });
+      return res.status(404).json(Response({statusCode:404,status:"faield", message: 'Location not found' }));
     }
     res.status(200).j(son(Response({status:"ok",message:"updated successfullu",data:location})));
   } catch (err) {
     console.error('Error updating location:', err);
-    res.status(500).json({ error: 'Error updating location' });
+    res.status(500).json(Response({ statusCode:500,status:"server error", message: 'Error updating location' }));
   }
 };
 
