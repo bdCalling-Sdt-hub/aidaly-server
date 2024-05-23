@@ -9,6 +9,7 @@ const OrderSchema = new mongoose.Schema({
         ref: 'User', 
         required: true 
     },
+    boutiqueId:{type:String,required:true},
     orderItems:{
        type:mongoose.Schema.Types.ObjectId,
        ref:'OrderItem',
@@ -21,6 +22,7 @@ const OrderSchema = new mongoose.Schema({
     serviceFee:{type:String,required:true},
     shippingFee:{type:String,required:true},
     tips:{type:String,required:true},
+    tax:{type:String,required:true},
     status: { 
         type: String, 
         enum: ['neworder', 'inprogress', 'assigned', 'delivered', 'cancelled'], 
@@ -34,11 +36,7 @@ const OrderSchema = new mongoose.Schema({
         transectionId:{type:String,required:true},
         methodName:{type:String,required:true} 
     },
-    paymentStatus: { 
-        type: String, 
-        enum: ['pending', 'completed', 'failed'], 
-        default: 'pending' 
-    },
+   
     assignedDriver: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Driver",

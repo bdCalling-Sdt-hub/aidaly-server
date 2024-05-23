@@ -67,8 +67,19 @@ const addVehicle = async (req, res, next) => {
         res.status(200).json(Response({statusCode:200,status:"success", message: "vehical added successfully",data:{data} }));
     } catch (error) {
         console.error('Error adding vehicle:', error);
-        return res.status(500).json({ success: false, message: 'Internal Server Error' });
+        return res.status(500).json(Response({ statusCode: 500, message: error.message,status:"failed" }));
     }
 };
 
-module.exports = { addVehicle };
+const findAllDrivers=async(req,res,next)=>{
+
+    try {
+        const allDrivers = await User.find({ role: 'driver' });
+        res.status(200).json(Response({statusCode:200,status:"ok",message:"fetched successfully ", data:allDrivers}))
+        
+    } catch (error) {
+        return res.status(500).json(Response({ statusCode: 500, message: error.message,status:"failed" }));
+    }
+}
+
+module.exports = { addVehicle,findAllDrivers };

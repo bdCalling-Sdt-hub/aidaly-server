@@ -4,7 +4,7 @@ const router = express.Router();
 //import controllers
 const { signUp, signIn, forgotPassword, verifyCode, cahngePassword, resendOtp, userBlocked, logoutController, updateProfile } = require('../controllers/userController');
 const upload = require('../middlewares.js/fileUpload');
-const { addVehicle } = require('../controllers/vehicalController');
+const { addVehicle, findAllDrivers } = require('../controllers/vehicalController');
 const { signUpBoutique, updateProfileOfboutique } = require('../controllers/boutiqueController');
 const { createLocation, getLocations, getLocationById, updateLocation } = require('../controllers/locationController');
 
@@ -28,6 +28,7 @@ router.patch('/updateProfile', upload ,updateProfile)
 // router.post('/vehicalDetails/:userId',upload.array["image",3],addVehicle)
 
 router.post('/vehicalDetails', upload, addVehicle);
+router.get('/findAllDrivers',findAllDrivers)
 // boutique signup route 
 router.post('/signUp-Boutique', upload, signUpBoutique);
 router.patch('/updateProfile-Boutique', upload, updateProfileOfboutique);
