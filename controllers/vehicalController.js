@@ -81,5 +81,53 @@ const findAllDrivers=async(req,res,next)=>{
         return res.status(500).json(Response({ statusCode: 500, message: error.message,status:"failed" }));
     }
 }
+const findNearByDriver=async(req,res,next)=>{
+    const boutique = req.query.boutiqueId;
+console.log(boutique)
+    function calculateDistance(boutique, driver) {
+        const R = 6371; // Radius of the Earth in kilometers
+        const lat1 = boutique.latitude;
+        const lon1 = boutique.longitude;
+        const lat2 = driver.latitude;
+        const lon2 = driver.longitude;
+        const dLat = (lat2 - lat1) * Math.PI / 180; // Convert degrees to radians
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c; // Distance in kilometers
+        return distance;
+    }
 
-module.exports = { addVehicle,findAllDrivers };
+    try { 
+        // Boutique location 
+        const boutiqueLocation = await User.findById(boutique);
+        console.log(boutiqueLocation.currentLocation,"boutiqe");
+   
+        const allDrivers = await User.find({ role: 'driver' });
+        const drivers = allDrivers.map(driver => driver.currentLocation);
+    
+
+        // Calculate distances and filter drivers within one kilometer
+        const nearbyDrivers = drivers.filter(driver => {
+            const distance = calculateDistance(boutiqueLocation.currentLocation, driver);
+            console.log(distance < 1.5);
+            return distance < 1.5; // Filter drivers within one kilometer
+        });
+        
+        
+        const userIds = nearbyDrivers.map(item => item.userId);
+        const AllNearbyDriver = await User.find({ _id: { $in: userIds } });
+     
+
+    
+            res.status(200).json(Response({ status: "success", statusCode: 200, message: "Updated for assigned driver", data: AllNearbyDriver }));
+        
+    } catch (error) {
+        // Server error
+        res.status(500).json(Response({ status: "failed", message: error.message, statusCode: 500 }));
+    }
+}
+
+module.exports = { addVehicle,findAllDrivers ,findNearByDriver};

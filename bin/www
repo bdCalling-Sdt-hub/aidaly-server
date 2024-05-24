@@ -7,6 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('medical-test:server');
 var http = require('http');
+const socketIO = require('../controllers/socketController');
 
 /**
  * Get port from environment and store in Express.
@@ -92,3 +93,22 @@ function onListening() {
     console.log('Listening on ' + bind);
   debug('Listening on ' + bind);
 }
+
+// add socket
+const socketIo = require('socket.io')
+
+const io = socketIo(server, {
+  cors: {
+    origin: '*'
+    //[
+    //   process.env.ALLOWED_CLIENT_URL_DASHBOARD,
+    //   process.env.ALLOWED_CLIENT_URL_WEB,
+    //   process.env.ALLOWED_CLIENT_URL_SUB_DASHBOARD
+    // ]
+  }
+});
+
+
+socketIO(io);
+
+global.io = io
