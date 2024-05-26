@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 
+
 // Define the Order schema
 const OrderSchema = new mongoose.Schema({
     orderId:{type:String,required:true},
@@ -9,7 +10,7 @@ const OrderSchema = new mongoose.Schema({
         ref: 'User', 
         required: true 
     },
-    boutiqueId:{type:String,required:true},
+    boutiqueId:{type:mongoose.Schema.Types.ObjectId, ref:"User",required:true},
     orderItems:{
        type:mongoose.Schema.Types.ObjectId,
        ref:'OrderItem',

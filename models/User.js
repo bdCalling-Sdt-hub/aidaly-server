@@ -28,6 +28,7 @@ const userSchema = new mongoose.Schema({
     rating:{type:String,required:false,default:"0"},
     description:{type:String,required:false},
     state: { type: String, required: false},
+    status:{type:String,required:false,default:"inactive"},
     privacyPolicyAccepted: { type: Boolean, default: false, required: false },
     isAdmin: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },
