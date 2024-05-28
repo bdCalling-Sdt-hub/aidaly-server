@@ -148,7 +148,8 @@ const makeOreder = async (req, res, next) => {
         tips,
         shippingFee,
         tax,
-        boutiqueId
+        boutiqueId,
+        subTotal
     } = req.body;
     console.log(boutiqueId, "this boutique id");
 
@@ -283,7 +284,8 @@ const makeOreder = async (req, res, next) => {
             serviceFee,
             orderItems: orderItemsId,
             tax,
-            boutiqueId
+            boutiqueId,
+            subTotal
         };
      
         const createOrder = await Order.create(orderedProperty);
@@ -354,7 +356,7 @@ const newOrder=async(req,res,next)=>{
         res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
      }
 }
-const orderInprogres=async(req,res,next)=>{
+const orderInprogresShow=async(req,res,next)=>{
      // for pagination 
      const page = parseInt(req.query.page) || 1;
      const limit = parseInt(req.query.limit) || 10;
@@ -477,7 +479,26 @@ try {
 // update statuse for assigned driver 
 const assignedDriver = async (req, res, next) => {
     const id = req.params.id;
-    const boutique = req.query.boutiqueId;
+    const driverId = req.query.driverId;
+
+    
+    try { 
+         
+        
+   // Update the order with the assigned driver
+   const driverAssigned = await Order.findByIdAndUpdate(id, { assignedDriver: driverId, status:"assigned" }, { new: true });
+   res.status(200).json(Response({ status: "success", statusCode: 200, message: "Updated for assigned driver", data: driverAssigned }));
+
+    } catch (error) {
+        // Server error
+        res.status(500).json(Response({ status: "failed", message: error.message, statusCode: 500 }));
+    }
+};
+
+// update statuse for assigned driver 
+const findNearByDriver = async (req, res, next) => {
+    const id = req.params.id;
+    // const boutique = req.query.boutiqueId;
 
     function calculateDistance(boutique, driver) {
         const R = 6371; // Radius of the Earth in kilometers
@@ -495,31 +516,50 @@ const assignedDriver = async (req, res, next) => {
         return distance;
     }
 
-    try { 
+    
+    // Get the token from the request headers
+   const tokenWithBearer = req.headers.authorization;
+   let token;
+
+   if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+       // Extract the token without the 'Bearer ' prefix
+       token = tokenWithBearer.slice(7);
+   }
+
+   if (!token) {
+       return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
+   }
+
+   try {
+       // Verify the token
+       const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+       if(!decoded._id==="boutique"){
+        return res.status(401).json(Response({ statusCode: 401, message: 'you are not boutique.',status:'faield' }));
+       }
         // Boutique location 
-        const boutiqueLocation = await User.findById(boutique);
+        const boutiqueLocation = await User.findById(decoded._id);
         console.log(boutiqueLocation.currentLocation);
    
-        const allDrivers = await User.find({ role: 'driver' });
+        const allDrivers = await User.find({ role: 'driver',status:"active" }).populate()
         const drivers = allDrivers.map(driver => driver.currentLocation);
-    
+    console.log(allDrivers,"all driverSS")
 
         // Calculate distances and filter drivers within one kilometer
         const nearbyDrivers = drivers.filter(driver => {
             const distance = calculateDistance(boutiqueLocation.currentLocation, driver);
             console.log(distance < 10);
-            return distance < 10000; // Filter drivers within one kilometer
+            return distance < 1.5; // Filter drivers within one kilometer
         });
         
         
-        const userIds = nearbyDrivers.map(item => item.userId);
-        const users = await User.find({ _id: { $in: userIds } });
+        // const userIds = nearbyDrivers.map(item => item.userId);
+        // const users = await User.find({ _id: { $in: userIds } });
 
 
         if (nearbyDrivers.length > 0) {
             // Update the order with the assigned driver
-            const driverAssigned = await Order.findByIdAndUpdate(id, { assignedDriver: id }, { new: true });
-            res.status(200).json(Response({ status: "success", statusCode: 200, message: "Updated for assigned driver", data: driverAssigned }));
+            // const driverAssigned = await Order.findByIdAndUpdate(id, { assignedDriver: }, { new: true });
+            res.status(200).json(Response({ status: "success", statusCode: 200, message: "Updated for assigned driver", data: allDrivers }));
         } else {
             res.status(404).json(Response({ status: "failed", statusCode: 404, message: "No drivers found within one kilometer" }));
         }
@@ -569,6 +609,71 @@ try {
     }
 }
 
+const inprogresOrderDetails=async (req,res,next)=>{
+    const id=req.params.id
+    try {
+        const progressDetails=await Order.findById(id).populate("orderItems boutiqueId")
+
+        res.status(200).json(Response({statusCode:200,status:"ok",message:"fetch details of inprogress order ",data:progressDetails}))
+
+
+        
+    } catch (error) {
+    // server error
+    res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
+}
+}
+
+const assignedOrderedShowe=async (req,res,next)=>{
+
+    // for pagination 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+   // Get the token from the request headers
+  const tokenWithBearer = req.headers.authorization;
+  let token;
+
+  if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+      // Extract the token without the 'Bearer ' prefix
+      token = tokenWithBearer.slice(7);
+  }
+
+  if (!token) {
+      return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
+  }
+
+  try {
+      // Verify the token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      if(!decoded._id==="boutique"){
+       return res.status(401).json(Response({ statusCode: 401, message: 'you are not boutique.',status:'faield' }));
+      }
+
+       const totalinProgressOrderLength=await Order.find({status:"assigned"}).countDocuments()
+    
+       const totainprogressOrder=await Order.find({status:"assigned"}).populate("orderItems")
+       .skip((page - 1) * limit)
+       .limit(limit);
+        // call the pagination
+
+        const paginationOfProduct= pagination(totalinProgressOrderLength,limit,page)
+        res.status(200).json(Response({
+            message: "order showed succesfully",
+            status:"success",
+            statusCode:200,
+            data: totainprogressOrder,
+            pagination: paginationOfProduct
+        }));
+       
+
+        
+    } catch (error) {
+         // server error
+    res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
+        
+    }
+}
+
 module.exports={
     makeOreder,
     orderInProgress,
@@ -576,5 +681,8 @@ module.exports={
     allOrdersOfBoutique,
     assignedDriver,
     newOrder,
-    orderInprogres
+    orderInprogresShow,
+    inprogresOrderDetails,
+    assignedOrderedShowe,
+    findNearByDriver
 }

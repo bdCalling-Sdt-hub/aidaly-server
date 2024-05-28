@@ -1,7 +1,7 @@
 const express = require('express');
 
 
-const { makeOreder, orderInProgress, orderDetails, allOrdersOfBoutique, assignedDriver, newOrder, orderInprogres } = require('../controllers/orderController');
+const { makeOreder, orderInProgress, orderDetails, allOrdersOfBoutique, assignedDriver, newOrder, orderInprogresShow, inprogresOrderDetails, assignedOrderedShowe, findNearByDriver } = require('../controllers/orderController');
 const router = express.Router();
 
 router.post('/makeOrder',makeOreder)
@@ -16,6 +16,12 @@ router.patch('/assignedDriver/:id',assignedDriver)
 // get new order 
 router.get('/newOrder',newOrder)
 // get inprogress order
-router.get('/orderInprogres',orderInprogres)
+router.get('/orderInprogresShow',orderInprogresShow)
+// show inprogress details
+router.get('/inprogresOrderDetails/:id',inprogresOrderDetails)
+// show assigned  ordered 
+router.get('/assignedOrderedShow',assignedOrderedShowe)
+// show all driver who is online 
+router.get('/findNearByDriver',findNearByDriver)
 
 module.exports = router;

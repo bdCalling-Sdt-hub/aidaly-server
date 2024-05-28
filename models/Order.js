@@ -24,6 +24,7 @@ const OrderSchema = new mongoose.Schema({
     shippingFee:{type:String,required:true},
     tips:{type:String,required:true},
     tax:{type:String,required:true},
+    subTotal:{type:String,required:true},
     status: { 
         type: String, 
         enum: ['neworder', 'inprogress', 'assigned', 'delivered', 'cancelled'], 
