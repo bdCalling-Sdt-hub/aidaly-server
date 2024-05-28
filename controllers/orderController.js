@@ -487,6 +487,7 @@ const assignedDriver = async (req, res, next) => {
         
    // Update the order with the assigned driver
    const driverAssigned = await Order.findByIdAndUpdate(id, { assignedDriver: driverId, status:"assigned" }, { new: true });
+   await User.findByIdAndUpdate(driverId,{assignedDriverProgress:"newOrder"},{new:true})
    res.status(200).json(Response({ status: "success", statusCode: 200, message: "Updated for assigned driver", data: driverAssigned }));
 
     } catch (error) {
@@ -595,8 +596,23 @@ try {
 
 
     const allOrderedProductOfBoutique = await Order.find({boutiqueId:decoded._id});
+    const statuseOfDashBoard=allOrderedProductOfBoutique.map(order=>order.status)
+    console.log(statuseOfDashBoard)
 
+// const activeOrders=await Order.find({boutiqueId:decoded._id},{status:"neworder"})
+const activeOrders = await Order.find({ boutiqueId: decoded._id, status: "neworder" });
 
+let totalAmount = 0;
+
+activeOrders.forEach(order => {
+    totalAmount += parseFloat(order.totalAmount.replace(/[^\d.]/g, ''));
+
+});
+
+console.log("Total amount of new orders:", totalAmount);
+//
+
+// console.log(activeOrders)
     
    if(allOrderedProductOfBoutique.length===0){
     res.status(200).json(Response({statusCode:200,status:"ok",message:"your product havent ordered yet ", }))
@@ -651,7 +667,7 @@ const assignedOrderedShowe=async (req,res,next)=>{
 
        const totalinProgressOrderLength=await Order.find({status:"assigned"}).countDocuments()
     
-       const totainprogressOrder=await Order.find({status:"assigned"}).populate("orderItems")
+       const totainprogressOrder=await Order.find({status:"assigned"}).populate("orderItems assignedDriver")
        .skip((page - 1) * limit)
        .limit(limit);
         // call the pagination

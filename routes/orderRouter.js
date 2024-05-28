@@ -2,6 +2,7 @@ const express = require('express');
 
 
 const { makeOreder, orderInProgress, orderDetails, allOrdersOfBoutique, assignedDriver, newOrder, orderInprogresShow, inprogresOrderDetails, assignedOrderedShowe, findNearByDriver } = require('../controllers/orderController');
+const { showDriverDashBored, cancelledOrderedAsDriver, showAllCancellOrder, showNewOrderForDriver, newOrderToProgress, getAllinprogressOrderForDriver } = require('../controllers/orderControllerForDriver');
 const router = express.Router();
 
 router.post('/makeOrder',makeOreder)
@@ -23,5 +24,21 @@ router.get('/inprogresOrderDetails/:id',inprogresOrderDetails)
 router.get('/assignedOrderedShow',assignedOrderedShowe)
 // show all driver who is online 
 router.get('/findNearByDriver',findNearByDriver)
+
+//---------------this is drive order route -----------
+// -------------------
+
+// driver order route all the order managed
+router.get('/showDriverDashBored',showDriverDashBored)
+// cancelled the order as driver 
+router.post('/cancelledOrderedAsDriver/:id',cancelledOrderedAsDriver)
+// fetched all cancelled data for the driver 
+router.get('/showAllCancellOrder',showAllCancellOrder)
+// get new order for driver
+router.get('/showNewOrderForDriver',showNewOrderForDriver)
+// driver user assigned updated 
+router.patch('/newOrderToProgress/:id',newOrderToProgress)
+// get all inprogress order for the driver 
+router.get('/getAllinprogressOrderForDriver',getAllinprogressOrderForDriver)
 
 module.exports = router;

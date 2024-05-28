@@ -41,7 +41,7 @@ const OrderSchema = new mongoose.Schema({
    
     assignedDriver: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Driver",
+        ref: "User",
         default: null // Default value is null
     },
     createdAt: { 
