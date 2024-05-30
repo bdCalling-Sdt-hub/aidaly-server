@@ -251,8 +251,8 @@ const makeOreder = async (req, res, next) => {
 
         // If any invalid quantities were found, send a 401 response
         if (invalidQuantitiesFound) {
-            return res.status(401).json(Response({
-                statusCode: 401,
+            return res.status(404).json(Response({
+                statusCode: 400,
                 message: "Cannot order products because some quantities are not available.",
                 status: 'failed'
             }));
@@ -260,13 +260,13 @@ const makeOreder = async (req, res, next) => {
 
         // Create order only if all product quantities are valid
         const allQuantitiesValid = updatedProducts.every(product => product && product.inventoryQuantity >= 0);
-        console.log(allQuantitiesValid,"jsdlkjflksdfjlkdjldksfjdslkfjdsklf")
+        // console.log(allQuantitiesValid,"jsdlkjflksdfjlkdjldksfjdslkfjdsklf")
         if (!allQuantitiesValid) {
             console.error("Order not created: Some product quantities are invalid");
-            return res.status(400).json(Response({
+            return res.status(404).json(Response({
                 status: "failed",
                 message: "Some product quantities are invalid",
-                statusCode: 400
+                statusCode: 404
             }));
         }
 
@@ -328,12 +328,12 @@ const newOrder=async(req,res,next)=>{
        // Verify the token
        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
        if(!decoded._id==="boutique"){
-        return res.status(401).json(Response({ statusCode: 401, message: 'you are not boutique.',status:'faield' }));
+        return res.status(404).json(Response({ statusCode: 404, message: 'you are not boutique.',status:'faield' }));
        }
 
         const totalNewOrderLength=await Order.find({status:"neworder"}).countDocuments()
         if(totalNewOrderLength===0){
-            return res.status(400).json(Response({ statusCode: 401, message: 'you dont have any new order product.',status:'faield' }));
+            return res.status(404).json(Response({ statusCode: 404, message: 'you dont have any new order product.',status:'faield' }));
         }
      
         const totalNewOrder=await Order.find({status:"neworder"}).populate("orderItems")
@@ -377,11 +377,15 @@ const orderInprogresShow=async(req,res,next)=>{
        // Verify the token
        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
        if(!decoded._id==="boutique"){
-        return res.status(401).json(Response({ statusCode: 401, message: 'you are not boutique.',status:'faield' }));
+        return res.status(404).json(Response({ statusCode: 401, message: 'you are not boutique.',status:'faield' }));
        }
 
         const totalinProgressOrderLength=await Order.find({status:"inprogress"}).countDocuments()
-     
+        console.log(totalinProgressOrderLength)
+        // if page lent is 0 then call it 
+        if (totalinProgressOrderLength === 0) {
+            return res.status(404).json(Response({ statusCode: 404, message: 'You don\'t have any in-progress orders.', status: 'failed' }));
+        }
         const totainprogressOrder=await Order.find({status:"inprogress"}).populate("orderItems")
         .skip((page - 1) * limit)
         .limit(limit);
@@ -424,7 +428,7 @@ const orderInProgress=async(req,res,next)=>{
        // Verify the token
        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
        if(!decoded._id==="boutique"){
-        return res.status(401).json(Response({ statusCode: 401, message: 'you are not boutique.',status:'faield' }));
+        return res.status(404).json(Response({ statusCode: 404, message: 'you are not boutique.',status:'faield' }));
        }
         const inprogress=await Order.findByIdAndUpdate(id, { status: "inprogress" }, { new: true },)
         
@@ -460,7 +464,7 @@ try {
     // Verify the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
     if(!decoded.role==="boutique"){
-        res.status(400).json(Response({status:"failed",statusCode:400,message:" your are not boutique " })) 
+        res.status(404).json(Response({status:"failed",statusCode:404,message:" your are not boutique " })) 
     }
     const boutique=await Location.findOne({ userId: decoded._id }).populate('userId','image name');
 
@@ -482,12 +486,39 @@ const assignedDriver = async (req, res, next) => {
     const driverId = req.query.driverId;
 
     
-    try { 
-         
+    // Get the token from the request headers
+const tokenWithBearer = req.headers.authorization;
+let token;
+
+if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+    // Extract the token without the 'Bearer ' prefix
+    token = tokenWithBearer.slice(7);
+}
+
+if (!token) {
+    return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
+}
+
+try {
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    if(!decoded.role==="boutique"){
+       return res.status(404).json(Response({status:"failed",statusCode:404,message:" your are not boutique " })) 
+    }
+    // const boutique=await Location.findOne({ userId: decoded._id }).populate('userId','image name');
+
+
+      const orderidMatch=await Order.findById(id)
+      
+      console.log(decoded._id,orderidMatch.boutiqueId.toString())
+      if(orderidMatch.boutiqueId.toString()!==decoded._id){
+       return  res.status(404).json(Response({status:"failed",statusCode:404,message:" your are not this boutique boutique " })) 
+
+      }
         
    // Update the order with the assigned driver
-   const driverAssigned = await Order.findByIdAndUpdate(id, { assignedDriver: driverId, status:"assigned" }, { new: true });
-   await User.findByIdAndUpdate(driverId,{assignedDriverProgress:"newOrder"},{new:true})
+   const driverAssigned = await Order.findByIdAndUpdate(id, { assignedDriver: driverId, status:"assigned",assignedDriverProgress:"newOrder" }, { new: true });
+//    await User.findByIdAndUpdate(driverId,{assignedDriverProgress:"newOrder"},{new:true})
    res.status(200).json(Response({ status: "success", statusCode: 200, message: "Updated for assigned driver", data: driverAssigned }));
 
     } catch (error) {
@@ -590,7 +621,7 @@ try {
     // Verify the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
     if(!decoded.role==="boutique"){
-        res.status(400).json(Response({status:"failed",statusCode:400,message:" your are not boutique " })) 
+        res.status(404).json(Response({status:"failed",statusCode:404,message:" your are not boutique " })) 
     }
    
 
@@ -666,7 +697,9 @@ const assignedOrderedShowe=async (req,res,next)=>{
       }
 
        const totalinProgressOrderLength=await Order.find({status:"assigned"}).countDocuments()
-    
+       if (totalinProgressOrderLength === 0) {
+        return res.status(404).json(Response({ statusCode: 404, message: 'You don\'t have any assing orders yet .', status: 'failed' }));
+    }
        const totainprogressOrder=await Order.find({status:"assigned"}).populate("orderItems assignedDriver")
        .skip((page - 1) * limit)
        .limit(limit);

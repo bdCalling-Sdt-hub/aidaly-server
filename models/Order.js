@@ -38,7 +38,8 @@ const OrderSchema = new mongoose.Schema({
         transectionId:{type:String,required:true},
         methodName:{type:String,required:true} 
     },
-   
+    assignedDriverProgress:{type:String,enum:["newOrder","inprogress","deliveried","cancelled"],default:null},
+
     assignedDriver: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
