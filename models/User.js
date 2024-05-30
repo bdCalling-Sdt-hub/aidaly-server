@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
     privacyPolicyAccepted: { type: Boolean, default: false, required: false },
     isAdmin: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },
-    assignedDriverProgress:{type:String,enum:["newOrder","inprogress","deliveried","cancelled"],default:null},
+    assignedDrivertrack:{type:String,enum:["waytoPickup","arrivedtheStore","orderPicked","waytodeliver","arrivedAtLocation","orderDelivered"],default:null},
     isDeleted: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
     isLoggedIn:{type:Boolean,default:false},
