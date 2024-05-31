@@ -13,6 +13,7 @@ const reviewRouter=require('./routes/reviewRouter')
 const wishlistRouter=require('./routes/wishlist')
 const cardRouter=require('./routes/cardRouter')
 const orderRoute=require('./routes/orderRouter')
+const orderTracRoute=require('./routes/driverTrackerRouter')
 
 
 const { connectToDatabase } = require('./helpers/connection');
@@ -45,6 +46,7 @@ app.use('/api/v1/user', userRouter);
  app.use('/api/v1/iswish',wishlistRouter)
  app.use('/api/v1/card',cardRouter)
  app.use('/api/v1/order',orderRoute)
+ app.use('/api/v1/orderTracking',orderTracRoute)
 // test route
 app.get('/api/test', (req, res) => {
   res.send('I am responding!');

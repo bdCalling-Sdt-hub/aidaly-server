@@ -29,7 +29,7 @@ const limit = parseInt(req.query.limit) || 10;
  try {
      // Verify the token
      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-     if(!decoded._id==="drver"){
+     if(!decoded._id==="driver"){
       return res.status(401).json(Response({ statusCode: 401, message: 'you are not boutique.',status:'faield' }));
      }
 
@@ -146,18 +146,12 @@ const limit = parseInt(req.query.limit) || 10;
     }
 
      const allCanseledOrderlength=await Cancelled.find({userId:decoded._id}).countDocuments()
-     const allCanseledOrder=await Cancelled.find({userId:decoded._id}).populate('boutiqueId') .populate({path:'boutiqueId',
+     const allCanseledOrder=await Cancelled.find({userId:decoded._id}).populate('boutiqueId') .populate({
         path: 'orderId',
-        populate: {
-            path: 'orderItems',
-            
-    
-        },
-        populate: {
-            path: 'boutiqueId',
-            
-    
-        }
+        populate: [
+            { path: 'orderItems' },
+            { path: 'boutiqueId' }
+        ]
     })
 
      .skip((page - 1) * limit)
@@ -212,6 +206,10 @@ const limit = parseInt(req.query.limit) || 10;
 
       return res.status(404).json(Response({ statusCode: 404, message: 'you are not driver.',status:'faield' }));
      }
+
+     const findTheStatus=await Order.find({assignedDriver:decoded._id,assignedDriverProgress:"newOrder"})
+     console.log(findTheStatus)
+
 const DriverNewOrder= await Order.find({assignedDriver:decoded._id,assignedDriverProgress:"newOrder"}).populate("boutiqueId orderItems")
 .skip((page - 1) * limit)
  .limit(limit);
@@ -219,7 +217,19 @@ const DriverNewOrder= await Order.find({assignedDriver:decoded._id,assignedDrive
     return res.status(404).json(Response({ statusCode: 404, message: 'You don\'t have any new order orders.', status: 'failed' }));
 }
 
-console.log(DriverNewOrder)
+
+//        // Update orders older than 5 minutes to null only if assignedDriverProgress is "newOrder"
+// const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000); // Calculate the time 5 minutes ago
+// await Promise.all(DriverNewOrder.map(async (order) => {
+//     if (order.assignedDriverProgress === "newOrder" && order.createdAt <= fiveMinutesAgo) {
+//         order.assignedDriverProgress = null;
+//         order.status="inprogress"
+//         order.assignedDriver = null;
+//        const tmani=    await order.save();
+//        console.log(tmani,"tis is from the ")
+//     }
+// }));
+// console.log(DriverNewOrder,fiveMinutesAgo)
 // console.log(user.assignedDriverProgress==="newOrder",decoded._id)
 // if(user.assignedDriverProgress!=="newOrder"){
 //     return res.status(404).json(Response({ statusCode: 404, message: 'this is not new order .',status:'faield' }));
@@ -494,16 +504,10 @@ const cnacleOrderDetails=async(req,res,next)=>{
 
         const detailsCancelOrder=await Cancelled.findById(id).populate('boutiqueId') .populate({path:'boutiqueId',
         path: 'orderId',
-        populate: {
-            path: 'orderItems',
-            
-    
-        },
-        populate: {
-            path: 'boutiqueId',
-            
-    
-        }
+        populate: [
+            { path: 'orderItems' },
+            { path: 'boutiqueId' }
+        ]
     })
     if (!detailsCancelOrder) {
         // Handle the case where the cancelled order is not found

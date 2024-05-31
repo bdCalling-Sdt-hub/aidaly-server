@@ -39,6 +39,8 @@ const OrderSchema = new mongoose.Schema({
         methodName:{type:String,required:true} 
     },
     assignedDriverProgress:{type:String,enum:["newOrder","inprogress","deliveried","cancelled"],default:null},
+    assignedDrivertrack:{type:String,enum:["waytoPickup","arrivedtheStore","orderPicked","waytodeliver","arrivedAtLocation","orderDelivered"],default:null},
+
 
     assignedDriver: {
         type: mongoose.Schema.Types.ObjectId,

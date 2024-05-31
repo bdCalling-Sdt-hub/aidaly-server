@@ -331,7 +331,11 @@ const newOrder=async(req,res,next)=>{
         return res.status(404).json(Response({ statusCode: 404, message: 'you are not boutique.',status:'faield' }));
        }
 
+
+
+        const totalNewOrderLengt=await Order.find({status:"neworder"})
         const totalNewOrderLength=await Order.find({status:"neworder"}).countDocuments()
+        console.log(totalNewOrderLengt)
         if(totalNewOrderLength===0){
             return res.status(404).json(Response({ statusCode: 404, message: 'you dont have any new order product.',status:'faield' }));
         }
@@ -502,25 +506,38 @@ if (!token) {
 try {
     // Verify the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    if(!decoded.role==="boutique"){
+    if(decoded.role!=="boutique"){
        return res.status(404).json(Response({status:"failed",statusCode:404,message:" your are not boutique " })) 
     }
+    console.log(decoded)
     // const boutique=await Location.findOne({ userId: decoded._id }).populate('userId','image name');
 
 
       const orderidMatch=await Order.findById(id)
+    //   console.log(orderidMatch.boutiqueId)
+      const user =await User.findById(orderidMatch.boutiqueId)
       
-      console.log(decoded._id,orderidMatch.boutiqueId.toString())
-      if(orderidMatch.boutiqueId.toString()!==decoded._id){
-       return  res.status(404).json(Response({status:"failed",statusCode:404,message:" your are not this boutique boutique " })) 
+    //   console.log(decoded.email,user.email)
+      if(user.email!==decoded.email){
+       return  res.status(404).json(Response({status:"failed",statusCode:404,message:" your are not this boutique pleace signin as shoper " })) 
 
       }
-        
-   // Update the order with the assigned driver
-   const driverAssigned = await Order.findByIdAndUpdate(id, { assignedDriver: driverId, status:"assigned",assignedDriverProgress:"newOrder" }, { new: true });
-//    await User.findByIdAndUpdate(driverId,{assignedDriverProgress:"newOrder"},{new:true})
-   res.status(200).json(Response({ status: "success", statusCode: 200, message: "Updated for assigned driver", data: driverAssigned }));
+    //   const findTheDriverAccepet=await Order.findById(id)
+      // Schedule the task to revert the order status if the driver does not accept within 5 minutes
+      setTimeout(async () => {
+        const orderAfterTimeout = await Order.findById(id);
+        if (orderAfterTimeout.status === "assigned" && orderAfterTimeout.assignedDriverProgress === "newOrder") {
+            // Revert order status to "inprogress" and set assigned driver to null
+            await Order.findByIdAndUpdate(id, { status: "inprogress", assignedDriver: null, assignedDriverProgress: null });
+        }
+    }, 5 * 60 * 1000); // 5 minutes delay
 
+
+     //Update the order with the assigned driver
+   const driverAssigned = await Order.findByIdAndUpdate(id, { assignedDriver: driverId, status:"assigned",assignedDriverProgress:"newOrder" }, { new: true });
+   //    await User.findByIdAndUpdate(driverId,{assignedDriverProgress:"newOrder"},{new:true})
+      res.status(200).json(Response({ status: "success", statusCode: 200, message: "Updated for assigned driver", data: driverAssigned }));
+   
     } catch (error) {
         // Server error
         res.status(500).json(Response({ status: "failed", message: error.message, statusCode: 500 }));
@@ -671,57 +688,136 @@ const inprogresOrderDetails=async (req,res,next)=>{
 }
 }
 
-const assignedOrderedShowe=async (req,res,next)=>{
+// const assignedOrderedShowe=async (req,res,next)=>{
 
-    // for pagination 
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-   // Get the token from the request headers
-  const tokenWithBearer = req.headers.authorization;
-  let token;
+//     // for pagination 
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 10;
+//    // Get the token from the request headers
+//   const tokenWithBearer = req.headers.authorization;
+//   let token;
 
-  if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
-      // Extract the token without the 'Bearer ' prefix
-      token = tokenWithBearer.slice(7);
-  }
+//   if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+//       // Extract the token without the 'Bearer ' prefix
+//       token = tokenWithBearer.slice(7);
+//   }
 
-  if (!token) {
-      return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
-  }
+//   if (!token) {
+//       return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
+//   }
 
-  try {
-      // Verify the token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-      if(!decoded._id==="boutique"){
-       return res.status(401).json(Response({ statusCode: 401, message: 'you are not boutique.',status:'faield' }));
-      }
+//   try {
+//       // Verify the token
+//       const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+//       if(!decoded._id==="boutique"){
+//        return res.status(401).json(Response({ statusCode: 401, message: 'you are not boutique.',status:'faield' }));
+//       }
 
-       const totalinProgressOrderLength=await Order.find({status:"assigned"}).countDocuments()
-       if (totalinProgressOrderLength === 0) {
-        return res.status(404).json(Response({ statusCode: 404, message: 'You don\'t have any assing orders yet .', status: 'failed' }));
-    }
-       const totainprogressOrder=await Order.find({status:"assigned"}).populate("orderItems assignedDriver")
-       .skip((page - 1) * limit)
-       .limit(limit);
-        // call the pagination
+//        const totalinProgressOrderLength=await Order.find({status:"assigned"}).countDocuments()
+//        if (totalinProgressOrderLength === 0) {
+//         return res.status(404).json(Response({ statusCode: 404, message: 'You don\'t have any assing orders yet .', status: 'failed' }));
+//     }
+//     //    const totainprogressOrder=await Order.find({status:"assigned",assignedDriverProgress:"newOrder"}).populate("orderItems assignedDriver")
+       
+//     const totainprogressOrder = await Order.find({
+//         $or: [
+//             { status: "assigned", assignedDriverProgress: "newOrder" }, // Orders with both fields
+//             { status: "assigned" }, // Orders with only status "assigned"
+//             { assignedDriverProgress: "newOrder" }, // Orders with only assignedDriverProgress "newOrder"
+//             { assignedDriverProgress: "inprogress" }
+//         ]
+//     }).populate("orderItems assignedDriver")
+//     .skip((page - 1) * limit)
+//        .limit(limit);
+//         // call the pagination
+//           // Check if there are any orders with assignedDriverProgress "inprogress"
+//           const inProgressOrders = totainprogressOrder.filter(order => order.assignedDriverProgress === "inprogress");
+//           if (inProgressOrders.length > 0) {
+//               return res.status(404).json(Response({ statusCode: 404, message: 'Driver has not yet accepted the order.', status: 'failed' }));
+//           }
 
-        const paginationOfProduct= pagination(totalinProgressOrderLength,limit,page)
-        res.status(200).json(Response({
-            message: "order showed succesfully",
-            status:"success",
-            statusCode:200,
-            data: totainprogressOrder,
-            pagination: paginationOfProduct
-        }));
+//         const paginationOfProduct= pagination(totalinProgressOrderLength,limit,page)
+//         res.status(200).json(Response({
+//             message: "order showed succesfully",
+//             status:"success",
+//             statusCode:200,
+//             data: totainprogressOrder,
+//             pagination: paginationOfProduct
+//         }));
        
 
         
-    } catch (error) {
-         // server error
-    res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
+//     } catch (error) {
+//          // server error
+//     res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
         
+//     }
+// }
+const assignedOrderedShowe = async (req, res, next) => {
+    // for pagination 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    // Get the token from the request headers
+    const tokenWithBearer = req.headers.authorization;
+    let token;
+
+    if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+        // Extract the token without the 'Bearer ' prefix
+        token = tokenWithBearer.slice(7);
+    }
+
+    if (!token) {
+        return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.', status: 'failed' }));
+    }
+
+    try {
+        // Verify the token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        if (!decoded._id === "boutique") {
+            return res.status(401).json(Response({ statusCode: 401, message: 'You are not a boutique.', status: 'failed' }));
+        }
+
+        const totalInProgressOrderLength = await Order.find({ status: "assigned" }).countDocuments();
+        if (totalInProgressOrderLength === 0) {
+            return res.status(404).json(Response({ statusCode: 404, message: 'You don\'t have any assigned orders yet.', status: 'failed' }));
+        }
+
+        // Fetch orders based on criteria
+        const totainprogressOrder = await Order.find({
+            $or: [
+                { status: "assigned", assignedDriverProgress: "newOrder" }, // Orders with both fields
+                { status: "assigned" }, // Orders with only status "assigned"
+                { assignedDriverProgress: "newOrder" }, // Orders with only assignedDriverProgress "newOrder"
+                { assignedDriverProgress: "inprogress" } // Orders with only assignedDriverProgress "inprogress"
+            ]
+        }).populate("orderItems assignedDriver")
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        const inProgressOrders = totainprogressOrder.filter(order => order.assignedDriverProgress === "inprogress");
+        const notAcceptedOrders = totainprogressOrder.filter(order => order.assignedDriverProgress !== "inprogress");
+
+        if (inProgressOrders.length > 0) {
+            return res.status(200).json(Response({
+                message: "Orders with assignedDriverProgress as 'inprogress'",
+                status: "success",
+                statusCode: 200,
+                data: {inProgressOrders,notAcceptedOrders}
+            }));
+        } else {
+            return res.status(404).json(Response({
+                message: "Driver has not yet accepted the orders.",
+                status: "failed",
+                statusCode: 404
+            }));
+        }
+
+    } catch (error) {
+        // server error
+        res.status(500).json(Response({ status: "failed", message: error.message, statusCode: 500 }));
     }
 }
+
 
 module.exports={
     makeOreder,
