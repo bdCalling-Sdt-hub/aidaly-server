@@ -171,7 +171,8 @@ const onTheWayToDeliver=async(req,res,next)=>{
  
 
         }
-        const findDrivertoupdatoarriveStore=await User.findByIdAndUpdate(id,{assignedDrivertrack:"waytodeliver"},{new:true})
+        const findDrivertoupdatoarriveStore=await Order.findByIdAndUpdate(id,{assignedDrivertrack:"waytodeliver"},{new:true})
+        console.log(findDrivertoupdatoarriveStore)
 
         const onthewayTodeliver=await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver')
 
@@ -209,7 +210,7 @@ const arrivedAtlocation=async(req,res,next)=>{
         const findOrder=await Order.findById(id)
         // const user=await User.findById(decoded._id)
 
-        if(user.assignedDrivertrack!=="waytodeliver"){
+        if(findOrder.assignedDrivertrack!=="waytodeliver"){
             return res.status(404).json(Response({ statusCode: 404, message: 'you are assinged for diffrent track statuse.',status:'faield' }));
  
 
@@ -325,6 +326,76 @@ const openTrackerOfGet=async(req,res,next)=>{
 
 }
 
+// boutique will tracking the driver 
+//--------------------####-------------
+
+const boutiqueTrackingDriver=async(req,res,next)=>{
+    try {
+        // order ID
+        const id=req.params.id
+        
+        const drivertrackingByOrder=await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver')
+        console.log(drivertrackingByOrder)
+
+        if(drivertrackingByOrder.assignedDrivertrack==="waytoPickup"){
+            const drivertrackingByOrders=await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver')
+
+           return  res.status(200).json(Response({statusCode:200,status:"ok",message:"driver is on the way to pickup the order ",data:drivertrackingByOrders}))
+        }
+        if(drivertrackingByOrder.assignedDrivertrack==="waytodeliver"){
+            const drivertrackingByOrders=await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver')
+
+           return  res.status(200).json(Response({statusCode:200,status:"ok",message:"driver is delivering the order ",data:drivertrackingByOrders}))
+        }
+        if(drivertrackingByOrder.assignedDrivertrack==="arrivedAtLocation"){
+            const drivertrackingByOrders=await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver')
+
+           return  res.status(200).json(Response({statusCode:200,status:"ok",message:"driver is reching the location ",data:drivertrackingByOrders}))
+        }
+        // return  res.status(200).json(Response({statusCode:200,status:"ok",message:"please wait for driver   ",}))
+
+        
+    } catch (error) {
+        res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
+
+    }
+}
+
+// tracking the driver from shoper end 
+//-----------------##--------------
+
+const shoperTrackingDriver=async(req,res,next)=>{
+    try {
+        // order ID
+        const id=req.params.id
+        
+        const drivertrackingByOrder=await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver')
+        console.log(drivertrackingByOrder)
+
+        if(drivertrackingByOrder.assignedDrivertrack==="waytoPickup"){
+            const drivertrackingByOrders=await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver')
+
+           return  res.status(200).json(Response({statusCode:200,status:"ok",message:"driver is on the way to pickup the order ",data:drivertrackingByOrders}))
+        }
+        if(drivertrackingByOrder.assignedDrivertrack==="waytodeliver"){
+            const drivertrackingByOrders=await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver')
+
+           return  res.status(200).json(Response({statusCode:200,status:"ok",message:"driver is delivering the order ",data:drivertrackingByOrders}))
+        }
+        if(drivertrackingByOrder.assignedDrivertrack==="arrivedAtLocation"){
+            const drivertrackingByOrders=await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver')
+
+           return  res.status(200).json(Response({statusCode:200,status:"ok",message:"driver is reching the location ",data:drivertrackingByOrders}))
+        }
+        // return  res.status(200).json(Response({statusCode:200,status:"ok",message:"please wait for driver   ",}))
+
+        
+    } catch (error) {
+        res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
+
+    }
+}
+
 module.exports={
     wayToPickupDriver,
     openTracker,
@@ -332,5 +403,7 @@ module.exports={
     onTheWayToDeliver,
     arrivedAtlocation,
     orderDelivered,
-    openTrackerOfGet
+    openTrackerOfGet,
+    boutiqueTrackingDriver,
+    shoperTrackingDriver
 }

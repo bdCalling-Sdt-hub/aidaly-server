@@ -34,9 +34,16 @@ const limit = parseInt(req.query.limit) || 10;
      }
 
 const driverGetOrder=await Order.find({assignedDriver:decoded._id})
-console.log(driverGetOrder)
+// console.log(driverGetOrder)
 
 const activeOrders = await Order.find({ assignedDriver: decoded._id, status: "inprogress" });
+const compliteOrder = await Order.find({ assignedDriver: decoded._id, status: "deliveried" });
+// console.log(activeOrders.length,compliteOrder.length)
+const driverDashboard={
+    activeOrders:activeOrders.length,
+    compliteOrders:compliteOrder.length
+
+}
 
 let totalAmount = 0;
 
@@ -45,15 +52,26 @@ activeOrders.forEach(order => {
 
 });
 console.log(totalAmount)
+
+
+
+
+
+
+
+
     
+// if (driverGetOrder.length === 0) {
+//     return res.status(404).json(Response({ statusCode: 404, message: 'You don\'t have any new order orders.', status: 'failed' }));
+// }
         
-const paginationOfProduct= pagination(driverGetOrder.length,limit,page)
+// const paginationOfProduct= pagination(driverGetOrder.length,limit,page)
 res.status(200).json(Response({
     message: "order showed succesfully",
     status:"success",
     statusCode:200,
-    data: driverGetOrder,
-    pagination: paginationOfProduct
+    data: driverDashboard,
+    // pagination: paginationOfProduct
 }));
     } catch (error) {
         // server error
@@ -153,6 +171,7 @@ const limit = parseInt(req.query.limit) || 10;
             { path: 'boutiqueId' }
         ]
     })
+
 
      .skip((page - 1) * limit)
      .limit(limit);

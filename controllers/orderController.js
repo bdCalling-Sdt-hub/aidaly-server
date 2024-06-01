@@ -644,34 +644,86 @@ try {
 
 
     const allOrderedProductOfBoutique = await Order.find({boutiqueId:decoded._id});
-    const statuseOfDashBoard=allOrderedProductOfBoutique.map(order=>order.status)
-    console.log(statuseOfDashBoard)
+    // const statuseOfDashBoard=allOrderedProductOfBoutique.map(order=>order.status)
+    // console.log(allOrderedProductOfBoutique)
 
 // const activeOrders=await Order.find({boutiqueId:decoded._id},{status:"neworder"})
-const activeOrders = await Order.find({ boutiqueId: decoded._id, status: "neworder" });
+const activeOrders = await Order.find({ boutiqueId: decoded._id, status: "inprogress" });
 
-let totalAmount = 0;
+let totalAmountOfActiveOrder = 0;
 
 activeOrders.forEach(order => {
-    totalAmount += parseFloat(order.totalAmount.replace(/[^\d.]/g, ''));
+    totalAmountOfActiveOrder += parseFloat(order.totalAmount.replace(/[^\d.]/g, ''));
+
+});
+// compleate order 
+const compliteOrder = await Order.find({ boutiqueId: decoded._id, status: "delivered" });
+
+let totalCompliteOrder = 0;
+
+compliteOrder.forEach(order => {
+    totalCompliteOrder += parseFloat(order.totalAmount.replace(/[^\d.]/g, ''));
 
 });
 
-console.log("Total amount of new orders:", totalAmount);
+console.log("Total amount of new orders:", totalAmountOfActiveOrder,activeOrders.length);
+//
+// compleate order 
+const reciveOrder = await Order.find({ boutiqueId: decoded._id, status: "neworder" });
+
+let reciveOrderTotal = 0;
+
+reciveOrder.forEach(order => {
+    reciveOrderTotal += parseFloat(order.totalAmount.replace(/[^\d.]/g, ''));
+
+});
+
+console.log("Total amount of new orders:", totalAmountOfActiveOrder,activeOrders.length);
+//
+const TotalOrder = await Order.find({ boutiqueId: decoded._id });
+
+let totalOrderAmount = 0;
+
+TotalOrder.forEach(order => {
+    totalOrderAmount += parseFloat(order.totalAmount.replace(/[^\d.]/g, ''));
+
+});
+
+console.log("Total amount of new orders:", totalAmountOfActiveOrder,activeOrders.length);
 //
 
+const boutiqueDashboard={
+    activeOrder:{
+        totalOrder:activeOrders.length,
+        totalAmount:totalAmountOfActiveOrder
+    },
+    compliteOrder:{
+        totalOrder:compliteOrder.length,
+        totalAmount:totalCompliteOrder
+    },
+    reciveOrder:{
+        totalOrder:reciveOrder.length,
+        totalAmount:reciveOrderTotal
+    },
+    totalOrdar:{
+        totalOrder:TotalOrder.length,
+        totalAmount:totalOrderAmount
+    }
+}
 // console.log(activeOrders)
     
    if(allOrderedProductOfBoutique.length===0){
     res.status(200).json(Response({statusCode:200,status:"ok",message:"your product havent ordered yet ", }))
    }
 
-        res.status(200).json(Response({statusCode:200,status:"ok",message:"fetch alldeta ",data:allOrderedProductOfBoutique}))
+        res.status(200).json(Response({statusCode:200,status:"ok",message:"fetch alldeta ",data:boutiqueDashboard}))
     } catch (error) {
          // server error
          res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
     }
 }
+
+
 
 const inprogresOrderDetails=async (req,res,next)=>{
     const id=req.params.id
@@ -794,24 +846,33 @@ const assignedOrderedShowe = async (req, res, next) => {
             .skip((page - 1) * limit)
             .limit(limit);
 
-        const inProgressOrders = totainprogressOrder.filter(order => order.assignedDriverProgress === "inprogress");
-        const notAcceptedOrders = totainprogressOrder.filter(order => order.assignedDriverProgress !== "inprogress");
+    //     const inProgressOrders = totainprogressOrder.filter(order => order.assignedDriverProgress === "inprogress");
+    //     const notAcceptedOrders = totainprogressOrder.filter(order => order.assignedDriverProgress !== "inprogress");
+      const paginationOfProduct= pagination(totalInProgressOrderLength,limit,page)
 
-        if (inProgressOrders.length > 0) {
-            return res.status(200).json(Response({
-                message: "Orders with assignedDriverProgress as 'inprogress'",
-                status: "success",
-                statusCode: 200,
-                data: {inProgressOrders,notAcceptedOrders}
-            }));
-        } else {
-            return res.status(404).json(Response({
-                message: "Driver has not yet accepted the orders.",
-                status: "failed",
-                statusCode: 404
-            }));
-        }
-
+      return res.status(200).json(Response({
+        message: "Orders with assignedDriverProgress as 'inprogress'",
+        status: "success",
+        statusCode: 200,
+        data: totainprogressOrder,
+        pagination:paginationOfProduct
+    }));
+        // if (inProgressOrders.length > 0) {
+        //     return res.status(200).json(Response({
+        //         message: "Orders with assignedDriverProgress as 'inprogress'",
+        //         status: "success",
+        //         statusCode: 200,
+        //         data: inProgressOrders,
+        //         pagination:paginationOfProduct
+        //     }));
+        // } else {
+        //     return res.status(404).json(Response({
+        //         message: "Driver has not yet accepted the orders.",
+        //         status: "failed",
+        //         statusCode: 404
+        //     }));
+        
+    
     } catch (error) {
         // server error
         res.status(500).json(Response({ status: "failed", message: error.message, statusCode: 500 }));
