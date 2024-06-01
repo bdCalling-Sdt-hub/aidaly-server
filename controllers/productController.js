@@ -130,7 +130,10 @@ const showProductByUser=async(req,res,next)=>{
 
 }
 // show  rest of the product form database
-const allProducts=async(_req,res,next)=>{
+const allProducts=async(req,res,next)=>{
+     // for pagination 
+     const page = parseInt(req.query.page) || 1;
+     const limit = parseInt(req.query.limit) || 10;
 
 
     try {
@@ -139,11 +142,19 @@ const allProducts=async(_req,res,next)=>{
 
      
 
-        const products= await Product.find();
+        const productslength= await Product.find().countDocuments()
+        // if page lent is 0 then call it 
+        if (productslength === 0) {
+            return res.status(404).json(Response({ statusCode: 404, message: 'this app dosnet have any product.', status: 'failed' }));
+        }
+        const products= await Product.find()
+        .skip((page - 1) * limit)
+        .limit(limit);
        
+        const paginationOfProduct= pagination(productslength,limit,page)
 
           // For demonstration purposes, I'm just sending a success response
-       res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:{products} }));
+       res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:products ,pagination:paginationOfProduct}));
    } catch (error) {
        console.log(error);
        // Handle any errors
@@ -360,6 +371,78 @@ await user.save();
     }
 }
 
+// under the constraction of lient rivew as per demand
+//----------------------##################
+//----------------------------------------------------------
+const updatedTheProduct=async(req,res,next)=>{
+    const { productName, category, inventoryQuantity, color, size,price } = req.body;
+    const { productImage1 } = req.files;
+
+
+   
+    const files = [];
+    if (req.files) {
+        productImage1.forEach((productImage1) => {
+        const publicFileUrl = `/images/users/${productImage1.filename}`;
+        
+        files.push({
+          publicFileUrl,
+          path: productImage1.filename,
+        });
+        // console.log(files);
+      });
+    }
+
+    
+    // Get the token from the request headers
+    const tokenWithBearer = req.headers.authorization;
+    let token;
+
+    if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+        // Extract the token without the 'Bearer ' prefix
+        token = tokenWithBearer.slice(7);
+    }
+
+    if (!token) {
+        return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
+    }
+
+    try {
+        // Verify the token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+     
+
+        // Check if the user has the "boutique" role
+        if (decoded.role !== "boutique") {
+            // If the user does not have the "boutique" role, return an error
+            return res.status(403).json(Response({ statusCode: 403, message: 'You are not authorized to create products.',status:'faield' }));
+        }
+        const id=req.params.id
+
+        const product=await Product.findById(id)
+
+        product.name=productName||product.name
+        product.category=category||product.category
+        product.inventoryQuantity=inventoryQuantity||product.inventoryQuantity
+        product.color= JSON.parse(color)||product.color
+        product.size=JSON.parse(size)||product.size
+        product.price=price||product.price
+        product.images=files||product.images
+
+        const updatededProduct=await product.save()
+
+
+        res.status(200).json(Response({statusCode:200,status:"ok",message:"product updated successfully ",data:updatededProduct}))
+
+
+
+    } catch (error) {
+        
+        res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
+
+    }
+}
 
 module.exports = {
     productCreate,
@@ -367,4 +450,6 @@ module.exports = {
     allProducts,
     showProductByCategory,
     showProductByUserId
-,ProductDetails};
+,ProductDetails,
+updatedTheProduct
+};

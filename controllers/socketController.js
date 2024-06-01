@@ -9,6 +9,7 @@ const User = require('../models/User');
 const Driver = require('../models/Driver');
 const Response = require('../helpers/response');
 const pagination = require('../helpers/pagination');
+const Location = require('../models/Location');
 
 
 
@@ -100,6 +101,17 @@ const socketIO = (io) => {
         await user.save();
     })
       
+socket.on('locationUpdate',async(data)=>{
+    const id=JSON.parse(data)
+    const location = await User.findById(id.data.id)
+    console.log(id.data,location.currentLocation.latitude);
+    console.log(id.data,location.currentLocation.longitude);
+    // location.latitude=location.latitude
+    // location.longitude=location.longitude
+    // await location.save()
+
+
+})
 
         socket.on('disconnect', async() => {
             console.log("you are disconnect")

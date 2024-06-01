@@ -130,4 +130,201 @@ console.log(boutique)
     }
 }
 
-module.exports = { addVehicle,findAllDrivers ,findNearByDriver};
+// update vehicals 
+//--------------####-
+
+// const updatedVehical=async(req,res,next)=>{
+    
+//     // Get the token from the request headers
+//     const tokenWithBearer = req.headers.authorization;
+//     let token;
+
+//     if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+//         // Extract the token without the 'Bearer ' prefix
+//         token = tokenWithBearer.slice(7);
+//     }
+
+//     if (!token) {
+//         return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
+//     }
+
+//     try {
+//         // Verify the token
+//         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+     
+//         // If the driver is valid and has not added a vehicle yet
+//         const { make, model, year,registrationNumber } = req.body;
+//         const { driverLicense, registration, policeCheck,  } = req.files;
+
+//         // Check if the user has the "boutique" role
+//         if (decoded.role !== "driver") {
+//             // If the user does not have the "boutique" role, return an error
+//             return res.status(403).json(Response({ statusCode: 403, message: 'You are not authorized to create products.',status:'faield' }));
+//         }
+//     const driver=await Driver.find({userId:decoded._id})
+    
+//     // driver[0].make=make||driver[0].make
+//     // driver[0].model=model||driver[0].model
+//     // driver[0].year=year||driver[0].year
+//     // driver[0].registrationNumber=registrationNumber||driver[0].registrationNumber
+//     // driver[0].driverLicense=driverLicense[0]||driver[0].driverLicense
+//     // driver[0].policeCheck=policeCheck[0]||driver[0].policeCheck
+//     // driver[0].registration=registration[0]||driver[0].registration
+//     // driver[0].make=make||driver[0].make
+
+// const updatedFields = {
+//     make: make || driver[0].make,
+//     model: model || driver[0].model,
+//     year: year || driver[0].year,
+//     registrationNumber: registrationNumber || driver[0].registrationNumber,
+//     driverLicense: driverLicense[0] || driver[0].driverLicense,
+//     policeCheck: policeCheck[0] || driver[0].policeCheck,
+//     registration: registration[0] || driver[0].registration
+// };
+
+// driver[0] = { ...driver[0], ...updatedFields };
+
+//     const updateDriver=await driver[0].save()
+        
+//     res.status(200).json(Response({ status: "success", statusCode: 200, message: "Updated  driver", data: updateDriver }));
+
+//     } catch (error) {
+//         res.status(500).json(Response({ status: "failed", message: error.message, statusCode: 500 }));
+
+        
+//     }
+// }
+// const updatedVehical = async (req, res, next) => {
+//     try {
+//         // Extract token from request headers
+//         const token = req.headers.authorization?.replace('Bearer ', '');
+//         if (!token) {
+//             return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.', status: 'failed' }));
+//         }
+
+//         // Verify the token
+//         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+//         // Check if the user has the "driver" role
+//         if (decoded.role !== "driver") {
+//             return res.status(403).json(Response({ statusCode: 403, message: 'You are not authorized.', status: 'failed' }));
+//         }
+
+//         // Retrieve driver data
+//         const driver = await Driver.findOne({ userId: decoded._id });
+//         if (!driver) {
+//             return res.status(404).json(Response({ statusCode: 404, message: 'Driver not found.', status: 'failed' }));
+//         }
+
+//         // Update driver's vehicle information
+//         const { make, model, year, registrationNumber } = req.body;
+//         console.log(year)
+//         // const { driverLicense, registration, policeCheck } = req.files;
+//         const files = [];
+// if (req.files) {
+//     const { driverLicense, registration, policeCheck } = req.files;
+
+//     if (driverLicense) {
+//         driverLicense.forEach(file => {
+//             const publicFileUrl = `/images/users/${file.filename}`;
+//             files.push({ publicFileUrl, path: file.filename });
+//         });
+//     }
+
+//     if (registration) {
+//         registration.forEach(file => {
+//             const publicFileUrl = `/images/users/${file.filename}`;
+//             files.push({ publicFileUrl, path: file.filename });
+//         });
+//     }
+
+//     if (policeCheck) {
+//         policeCheck.forEach(file => {
+//             const publicFileUrl = `/images/users/${file.filename}`;
+//             files.push({ publicFileUrl, path: file.filename });
+//         });
+//     }
+// }
+// console.log(files)
+
+
+//         driver.make = make || driver.make;
+//         driver.model = model || driver.model;
+//         driver.year = year || driver.year;
+//         // driver.registrationNumber= registrationNumber || driver.registrationNumber;
+//         // driver.driverLicense = files?.[0] || driver.driverLicense;
+//         // driver.policeCheck = files?.[2] || driver.policeCheck;
+//         // driver.registration = files?.[1] || driver.registration;
+
+//         const updatedDriver = await driver.save();
+//         console.log(year)
+
+//         res.status(200).json(Response({ status: "success", statusCode: 200, message: "Driver updated successfully.", data: updatedDriver }));
+
+//     } catch (error) {
+//         res.status(500).json(Response({ status: "failed", message: error.message, statusCode: 500 }));
+//     }
+// };
+const updatedVehical = async (req, res, next) => {
+    try {
+        // Get the token from the request headers
+        const tokenWithBearer = req.headers.authorization;
+        let token;
+
+        if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+            // Extract the token without the 'Bearer ' prefix
+            token = tokenWithBearer.slice(7);
+        }
+
+        if (!token) {
+            return res.status(401).json({ success: false, message: 'Token is missing.' });
+        }
+
+        // Verify the token
+        const decoded = await new Promise((resolve, reject) => {
+            jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
+                if (err) reject(err);
+                else resolve(decoded);
+            });
+        });
+
+        // Find the user by ID from the decoded token
+        const user = await User.findOne({ _id: decoded._id, role: "driver" });
+
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'You are not authorized to update vehicle information.' });
+        }
+
+        // Find the vehicle by user ID
+        const vehicle = await Driver.findOne({ userId: decoded._id }).exec();
+
+        if (!vehicle) {
+            return res.status(404).json({ success: false, message: 'Vehicle not found.' });
+        }
+
+        // Update vehicle information
+        const { make, model, year, registrationNumber } = req.body;
+        const { driverLicense, registration, policeCheck } = req.files;
+
+        vehicle.make = make || vehicle.make;
+        vehicle.model = model || vehicle.model;
+        vehicle.year = year || vehicle.year;
+        vehicle.registrationNumber = registrationNumber || vehicle.registrationNumber;
+        vehicle.driverLicense = driverLicense?.[0] || vehicle.driverLicense;
+        vehicle.registration = registration?.[0] || vehicle.registration;
+        vehicle.policeCheck = policeCheck?.[0] || vehicle.policeCheck;
+
+        const updatedVehicle = await vehicle.save();
+
+        res.status(200).json({ success: true, message: 'Vehicle updated successfully.', data: updatedVehicle });
+    } catch (error) {
+        console.error('Error updating vehicle:', error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+
+
+
+module.exports = { addVehicle,findAllDrivers ,findNearByDriver,updatedVehical};
