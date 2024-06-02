@@ -219,11 +219,28 @@ const allProducts=async(req,res,next)=>{
           const category = req.params.category;
           let products = [];
           let totalProducts = 0;
+           // Define the condition for inventory quantity
+        const inventoryCondition = { $gt: "0" };
+        const updatedForInvertoyQunetity=await Product.find({inventoryQuantity:inventoryCondition,category:category})
+          // If no products found, mark the category as not available
+          if (updatedForInvertoyQunetity.length === 0) {
+            // Mark category as not available
+            // await Category.updateOne({ name: category }, { $set: { available: false } });
+
+            // Return a message indicating the category is not available
+            return res.status(404).json(Response({
+                status:"ok",
+                statusCode:404,
+                message: `The category '${category}' is not available for viewing.`,
+                data: [],
+                pagination: null
+            }));
+        }
       
           // Handle "new-arrivals" category
           if (category === "new-arrivals") {
             // Find products with category "new-arrivals"
-            const productNewArrivals = await Product.find({ category: category, isNewArrivel: { $in: [true, false] }})
+            const productNewArrivals = await Product.find({ category: category, isNewArrivel: { $in: [true, false] },inventoryQuantity:inventoryCondition})
               .populate('userId', 'name image isBlocked');
       
             // Filter out products with blocked users
@@ -252,7 +269,7 @@ const allProducts=async(req,res,next)=>{
       
           } else {
             // Find the total number of products in the specified category (excluding blocked users)
-            const allProductsInCategory = await Product.find({ category, isNewArrivel: false })
+            const allProductsInCategory = await Product.find({ category, isNewArrivel: false ,inventoryQuantity:inventoryCondition})
               .populate('userId', 'name image isBlocked');
             const unblockedProductsInCategory = allProductsInCategory.filter(product => !product.userId.isBlocked);
             totalProducts = unblockedProductsInCategory.length;
@@ -374,26 +391,22 @@ await user.save();
 // under the constraction of lient rivew as per demand
 //----------------------##################
 //----------------------------------------------------------
-const updatedTheProduct=async(req,res,next)=>{
-    const { productName, category, inventoryQuantity, color, size,price } = req.body;
-    const { productImage1 } = req.files;
 
-
+const updatedTheProduct = async (req, res, next) => {
+    const { productName, category, inventoryQuantity, color, size, price } = req.body;
    
-    const files = [];
-    if (req.files) {
-        productImage1.forEach((productImage1) => {
-        const publicFileUrl = `/images/users/${productImage1.filename}`;
-        
-        files.push({
-          publicFileUrl,
-          path: productImage1.filename,
-        });
-        // console.log(files);
-      });
-    }
 
-    
+    const files = [];
+if (req.files && req.files.productImage1) {
+    req.files.productImage1.forEach((productImage) => {
+        const publicFileUrl = `/images/users/${productImage.filename}`;
+        files.push({
+            publicFileUrl,
+            path: productImage.filename,
+        });
+    });
+}
+
     // Get the token from the request headers
     const tokenWithBearer = req.headers.authorization;
     let token;
@@ -404,45 +417,55 @@ const updatedTheProduct=async(req,res,next)=>{
     }
 
     if (!token) {
-        return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
+        return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.', status: 'failed' }));
     }
 
     try {
         // Verify the token
         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-     
-
         // Check if the user has the "boutique" role
         if (decoded.role !== "boutique") {
             // If the user does not have the "boutique" role, return an error
-            return res.status(403).json(Response({ statusCode: 403, message: 'You are not authorized to create products.',status:'faield' }));
+            return res.status(403).json(Response({ statusCode: 403, message: 'You are not authorized to create products.', status: 'failed' }));
         }
-        const id=req.params.id
-
-        const product=await Product.findById(id)
-
-        product.name=productName||product.name
-        product.category=category||product.category
-        product.inventoryQuantity=inventoryQuantity||product.inventoryQuantity
-        product.color= JSON.parse(color)||product.color
-        product.size=JSON.parse(size)||product.size
-        product.price=price||product.price
-        product.images=files||product.images
-
-        // const updatededProduct=await product.save()
-
-
-        res.status(200).json(Response({statusCode:200,status:"ok",message:"product updated successfully ",data:product}))
+        
+        const id = req.params.id;
+        const product = await Product.findById(id);
+        
+        
+        // // Update product fields only if provided in the request body
+        product.name = productName || product.name;
+        product.category = category || product.category;
+        product.inventoryQuantity = inventoryQuantity || product.inventoryQuantity;
+        product.color = color || product.color;
+        product.size = size || product.size;
+        product.price = price || product.price;
 
 
+                // If files is not an empty array, update product.images
+                if (files.length > 0) {
+                    product.images = files;
+                }else{product.images=product.images}
+
+        // Update product.firstImage only if files array is not empty and has the first element
+        product.firstImage = (files.length > 0 && files[0]) || product.firstImage;
+
+        // // Update images only if new images are provided
+        // if (files.length > 0) {
+        //     product.images = files;
+        // }
+
+        // Save the updated product
+        await product.save();
+
+        res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product updated successfully", data: product }));
 
     } catch (error) {
-        
-        res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
-
+        res.status(500).json(Response({ status: "failed", message: error.message, statusCode: 500 }));
     }
 }
+
 
 module.exports = {
     productCreate,

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 //import controllers
-const { signUp, signIn, forgotPassword, verifyCode, cahngePassword, resendOtp, userBlocked, logoutController, updateProfile, changePasswordUseingOldPassword } = require('../controllers/userController');
+const { signUp, signIn, forgotPassword, verifyCode, cahngePassword, resendOtp, userBlocked, logoutController, updateProfile, changePasswordUseingOldPassword, ProfileOfUser } = require('../controllers/userController');
 const upload = require('../middlewares.js/fileUpload');
 const { addVehicle, findAllDrivers, findNearByDriver, updatedVehical } = require('../controllers/vehicalController');
 const { signUpBoutique, updateProfileOfboutique } = require('../controllers/boutiqueController');
@@ -25,6 +25,8 @@ router.post('/logout',logoutController)
 router.post("/resend",resendOtp)
 // update profile
 router.patch('/updateProfile', upload ,updateProfile)
+// profile showed
+router.get('/ProfileOfUser',ProfileOfUser)
 
 // router.post('/vehicalDetails/:userId',upload.array["image",3],addVehicle)
 // driver route
@@ -32,6 +34,7 @@ router.post('/vehicalDetails', upload, addVehicle);
 router.get('/findAllDrivers',findAllDrivers)
 router.get('/findNearByDriver',findNearByDriver)
 router.patch('/updatedVehical', upload,updatedVehical)
+
 // boutique signup route 
 router.post('/signUp-Boutique', upload, signUpBoutique);
 router.patch('/updateProfile-Boutique', upload, updateProfileOfboutique);

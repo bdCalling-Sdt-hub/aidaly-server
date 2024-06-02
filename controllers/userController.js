@@ -461,6 +461,40 @@ const changePasswordUseingOldPassword = async (req, res, next) => {
 // module.exports = changePasswordUseingOldPassword;
 
 
+// profile get for all user 
+const ProfileOfUser=async(req,res,next)=>{
+
+    
+     // Get the token from the request headers
+     const tokenWithBearer = req.headers.authorization;
+     let token;
+ 
+     if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+         // Extract the token without the 'Bearer ' prefix
+         token = tokenWithBearer.slice(7);
+     }
+ 
+     if (!token) {
+         return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
+     }
+ 
+     try {
+         // Verify the token
+         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+     
+         const profile=await User.findById(decoded._id)
+
+       return res.status(200).json(Response({ statusCode: 200, message: 'Profile showed successfully.', status: 'success',data:profile}));
+
+        
+    } catch (error) {
+        return  res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
+
+        
+    }
+
+}
+
 module.exports = {
     signUp,
     signIn,
@@ -471,6 +505,7 @@ module.exports = {
     userBlocked,
     logoutController,
     updateProfile,
-    changePasswordUseingOldPassword
+    changePasswordUseingOldPassword,
+    ProfileOfUser
     
 };

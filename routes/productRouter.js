@@ -10,7 +10,7 @@ router.get('/showProductByUser',showProductByUser)
 router.get('/allProducts',allProducts)
 router.get('/ProductDetails',ProductDetails)
 router.get('/showProductByUserId/:id',showProductByUserId)
-router.patch('/updatedTheProduct',upload,updatedTheProduct)
+router.patch('/updatedTheProduct/:id',upload,updatedTheProduct)
 
 
 

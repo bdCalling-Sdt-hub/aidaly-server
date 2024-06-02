@@ -19,13 +19,10 @@ const createWishList=async(req,res,next)=>{
    }
 
    try {
+    
        // Verify the token
-       const decoded = await new Promise((resolve, reject) => {
-           jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
-               if (err) reject(err);
-               else resolve(decoded);
-           });
-       });
+       const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
     //    const product=await Product.findById(id)
 
        // response 
