@@ -1,5 +1,5 @@
 const express = require('express');
-const { productCreate, showProductByUser, allProducts, showProductByCategory, ProductDetails, showProductByUserId } = require('../controllers/productController');
+const { productCreate, showProductByUser, allProducts, showProductByCategory, ProductDetails, showProductByUserId, updatedTheProduct } = require('../controllers/productController');
 const upload = require('../middlewares.js/fileUpload');
 const { createCategory, getallCategory, getallCategoryWithProductImage } = require('../controllers/categoryController');
 const router = express.Router();
@@ -10,6 +10,9 @@ router.get('/showProductByUser',showProductByUser)
 router.get('/allProducts',allProducts)
 router.get('/ProductDetails',ProductDetails)
 router.get('/showProductByUserId/:id',showProductByUserId)
+router.patch('/updatedTheProduct',upload,updatedTheProduct)
+
+
 
 // product catogray route
 router.post('/createCatery',upload,createCategory)

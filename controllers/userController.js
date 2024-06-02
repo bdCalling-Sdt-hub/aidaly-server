@@ -161,7 +161,7 @@ const signIn = async (req, res, next) => {
         }
 
         if(user.isVerified === false){
-res.status(401).json(Response({statusCode:401, message:'you are not veryfied',status:'Failed'}))
+ return res.status(401).json(Response({statusCode:401, message:'you are not veryfied',status:'Failed'}))
         }
 
         // Check if the user is banned
@@ -174,7 +174,7 @@ res.status(401).json(Response({statusCode:401, message:'you are not veryfied',st
         console.log("---------------", isPasswordValid)
 
         if (!isPasswordValid) {
-            res.status(401).json(Response({ statusCode: 401, message: 'Invalid password', status: "Failed" }));
+           return res.status(401).json(Response({ statusCode: 401, message: 'Invalid password', status: "Failed" }));
         }
 
         // Call userLogin service function
@@ -188,7 +188,7 @@ res.status(401).json(Response({statusCode:401, message:'you are not veryfied',st
 
     } catch (error) {
      
-        next(Response({ statusCode: 500, message: 'Internal server error', status: "Failed" }));
+        res.status(200).json(Response({ statusCode: 500, message:error.message, status: "Failed" }));
     }
 };
 
@@ -392,13 +392,74 @@ if (image && Array.isArray(image)) {
         res.status(200).json(Response({ statusCode: 200, message: 'Profile updated successfully.', status: 'success',data:users}));
 
     }catch(error){
-        res.status(500).json(Response({ statusCode: 500, message: 'internal server error.',status:'Failed' }));
+        res.status(500).json(Response({ statusCode: 500, message:error.message,status:'Failed' }));
     }
 
 
 }
 
-// edeite and updte of boutiqe
+// change password by using old password
+
+// const changePasswordUseingOldPassword=async(req,res,next)=>{
+
+// }
+// const bcrypt = require('bcrypt');
+
+const changePasswordUseingOldPassword = async (req, res, next) => {
+     // Get the token from the request headers
+   const tokenWithBearer = req.headers.authorization;
+   let token;
+
+   if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+       // Extract the token without the 'Bearer ' prefix
+       token = tokenWithBearer.slice(7);
+   }
+
+   if (!token) {
+       return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
+   }
+
+   try {
+       // Verify the token
+       const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      
+        // Assuming user is authenticated and req.user contains user details
+        
+        // Extract old and new passwords from request body
+        const { oldPassword, newPassword } = req.body;
+
+        const user=await User.findById(decoded._id)
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        console.log(user.password,oldPassword,newPassword)
+        // // Check if old password matches the stored hashed password
+        const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+        console.log(passwordMatch,"comaparrrrrrrrrrrrrrrrrrrrrrrrr")
+
+        if (!passwordMatch) {
+           return res.status(404).json(Response({ statusCode: 404, message: 'password incurrect.', status: 'success'}));
+        }
+
+        // // Hash the new password
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+        // // Update the user's password in the database
+        user.password = hashedNewPassword;
+        // console.log(hashedNewPassword,"hasssssss")
+
+        // // Save the updated user object in the database
+            await user.save()
+        // Optionally, respond with success message
+       return res.status(200).json(Response({ statusCode: 200, message: 'Profile updated successfully.', status: 'success',data:user}));
+    } catch (error) {
+        // Pass error to the error handling middleware
+      return  res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
+    }
+};
+
+// module.exports = changePasswordUseingOldPassword;
+
 
 module.exports = {
     signUp,
@@ -409,6 +470,7 @@ module.exports = {
     resendOtp,
     userBlocked,
     logoutController,
-    updateProfile
+    updateProfile,
+    changePasswordUseingOldPassword
     
 };

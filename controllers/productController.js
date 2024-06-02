@@ -430,10 +430,10 @@ const updatedTheProduct=async(req,res,next)=>{
         product.price=price||product.price
         product.images=files||product.images
 
-        const updatededProduct=await product.save()
+        // const updatededProduct=await product.save()
 
 
-        res.status(200).json(Response({statusCode:200,status:"ok",message:"product updated successfully ",data:updatededProduct}))
+        res.status(200).json(Response({statusCode:200,status:"ok",message:"product updated successfully ",data:product}))
 
 
 

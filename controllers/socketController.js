@@ -102,15 +102,28 @@ const socketIO = (io) => {
     })
       
 socket.on('locationUpdate',async(data)=>{
-    const id=JSON.parse(data)
-    const location = await User.findById(id.data.id)
-    console.log(id.data,location.currentLocation.latitude);
-    console.log(id.data,location.currentLocation.longitude);
-    // location.latitude=location.latitude
-    // location.longitude=location.longitude
-    // await location.save()
-
-
+    // const {id,latitute,longitude}=data
+    try {
+        const { id, latitute, longitude } = data;
+        // console.log(id, latitute, longitude);
+    
+        const locationFind = await Location.find({userId:id});
+        const location=locationFind[0]
+        // console.log(location.currentLocation.latitude);
+        // console.log(location.currentLocation.longitude);
+        console.log(location)
+    
+        location.latitude = latitute;
+        location.longitude = longitude;
+    
+        await location.save();
+        console.log("Location updated successfully!",latitute,longitude);
+    } catch (error) {
+        console.error("Error updating location:", error);
+        // Handle the error here, e.g., return an error response
+        // res.status(500).json({ error: "Internal server error" });
+    }
+    
 })
 
         socket.on('disconnect', async() => {
