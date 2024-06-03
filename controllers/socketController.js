@@ -10,6 +10,7 @@ const Driver = require('../models/Driver');
 const Response = require('../helpers/response');
 const pagination = require('../helpers/pagination');
 const Location = require('../models/Location');
+const Order = require('../models/Order');
 
 
 
@@ -130,6 +131,26 @@ socket.on('locationUpdate',async(data)=>{
             console.log("you are disconnect")
             
         });
+
+        socket.emit("ShowScreenByDriverTrackingStatus", async (data) => {
+            try {
+                const driveLocationForOrder = await Order.findById(data.orderId);
+                if (driveLocationForOrder) {
+                    // Assuming driver tracking status is a field in the order document
+                    const driverTrackingStatus = driveLocationForOrder.driverTrackingStatus;
+                    // Send only the driver tracking status
+                    socket.emit("DriverTrackingStatusResponse", driverTrackingStatus);
+                } else {
+                    // If order not found
+                    socket.emit("DriverTrackingStatusResponse", "Order not found");
+                }
+            } catch (error) {
+                // Handle any errors
+                console.error("Error:", error);
+                socket.emit("DriverTrackingStatusResponse", "Error occurred");
+            }
+        });
+        
 
 //         socket.on('findNearbyDrivers', async (data) => {
 //             const id = socket.handshake.query.id;

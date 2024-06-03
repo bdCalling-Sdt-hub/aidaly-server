@@ -8,10 +8,10 @@ const User = require("../models/User");
 
 // tracking controller for driver tracking
 //--------------##################
+// get openTracker
 
-// open tracker controller--------
-// /---------------------##----------
-const openTracker=async(req,res,next)=>{
+const openTrackerOfGet=async(req,res,next)=>{
+    
     // Get the token from the request headers
  const tokenWithBearer = req.headers.authorization;
  let token;
@@ -34,22 +34,138 @@ const openTracker=async(req,res,next)=>{
         const id=req.params.id
         const findOrder=await Order.findById(id)
         // const user=await User.findById(decoded._id)
-        if(findOrder.assignedDrivertrack!==null){
-            return res.status(404).json(Response({ statusCode: 404, message: 'you are assinged for diffrent track statuse.',status:'faield' }));
+        // console.log(user.assignedDrivertrack===null)
+        // if(findOrder.assignedDrivertrack!==null){
+        //      res.status(404).json(Response({ statusCode: 404, message: 'you are assinged for diffrent track statuse.',status:'faield' }));
  
 
-        }
-        console.log(findOrder.assignedDriver)
-        const findDrivertoupdatePickup=await Order.findByIdAndUpdate(id,{assignedDrivertrack:"waytoPickup"},{new:true})
+        // }else{
+        
+        
+        // const findDrivertoupdatePickup=await User.findByIdAndUpdate(findOrder.assignedDriver,{assignedDrivertrack:"waytoPickup"},{new:true})
         const findOrdertoTrac=await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver')
 
 
         res.status(200).json(Response({statusCode:200,status:"ok",message:"opend the tracker ",data:findOrdertoTrac}))
+        
     } catch (error) {
         res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
  
     }
+
+
 }
+// open tracker controller--------
+// /---------------------##----------
+// const openTracker=async(req,res,next)=>{
+//     // Get the token from the request headers
+//  const tokenWithBearer = req.headers.authorization;
+//  let token;
+
+//  if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+//      // Extract the token without the 'Bearer ' prefix
+//      token = tokenWithBearer.slice(7);
+//  }
+
+//  if (!token) {
+//      return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
+//  }
+
+//  try {
+//      // Verify the token
+//      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+//      if(!decoded._id==="driver"){
+//       return res.status(401).json(Response({ statusCode: 401, message: 'you are not driver.',status:'faield' }));
+//      }
+//         const id=req.params.id
+//         const findOrder=await Order.findById(id)
+//         // const user=await User.findById(decoded._id)
+//         if(findOrder.assignedDrivertrack!==null){
+//             return res.status(404).json(Response({ statusCode: 404, message: 'you are assinged for diffrent track statuse.',status:'faield' }));
+ 
+
+//         }
+//         console.log(findOrder.assignedDriver)
+//         const findDrivertoupdatePickup=await Order.findByIdAndUpdate(id,{assignedDrivertrack:"waytoPickup"},{new:true})
+//         const findOrdertoTrac=await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver')
+
+
+//         res.status(200).json(Response({statusCode:200,status:"ok",message:"opend the tracker ",data:findOrdertoTrac}))
+//     } catch (error) {
+//         res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
+ 
+//     }
+// }
+const openTracker = async (req, res, next) => {
+    // Get the token from the request headers
+    const tokenWithBearer = req.headers.authorization;
+    let token;
+
+    if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+        // Extract the token without the 'Bearer ' prefix
+        token = tokenWithBearer.slice(7);
+    }
+
+    if (!token) {
+        return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.', status: 'failed' }));
+    }
+    
+
+    try {
+        // Verify the token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        console.log(decoded)
+        
+        if (decoded.role !== "driver") {
+            return res.status(404).json(Response({ statusCode: 404, message: 'You are not a driver.', status: 'failed' }));
+        }
+        console.log(decoded,)
+
+        const id = req.params.id;
+        const { driverTrack } = req.body; // Assuming driverTrack is the status sent in the request body
+
+        const findOrder = await Order.findById(id);
+        console.log(driverTrack)
+
+        // if (findOrder.assignedDrivertrack ===driverTrack) {
+        //     return res.status(404).json(Response({ statusCode: 404, message: 'You are assigned for a  this tracking already.', status: 'failed' }));
+        // }
+
+        let updatedOrder;
+
+        if (driverTrack === 'orderDelivered') {
+            // If the driver track is 'orderDelivered', update all associated data
+            updatedOrder = await Order.findByIdAndUpdate(id, { 
+                assignedDrivertrack: driverTrack,
+                assignedDriverProgress: "deliveried", // Assuming this is the next stage after delivering
+                status: "delivered" // Assuming the overall status is 'delivered' after delivering
+            }, { new: true });
+
+            // Update associated boutique
+            const findDrivertoupdatoarriveStore=await Order.findByIdAndUpdate(id,{assignedDrivertrack:"orderDelivered"},{new:true})
+
+        const  updateOrderDeliverforDriver=await Order.findByIdAndUpdate(id,{assignedDriverProgress:"deliveried",status:"delivered"},{new:true})
+
+        } else {
+            // Otherwise, update only the driver track
+            updatedOrder = await Order.findByIdAndUpdate(id, { assignedDrivertrack: driverTrack }, { new: true });
+        }
+
+        const findOrderToTrack = await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver');
+
+        //  -------------
+        // /###################
+
+//         const findDriverToUpdatePickup = await Order.findByIdAndUpdate(id, { assignedDrivertrack: driverTrack }, { new: true });
+//         const findOrderToTrack = await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver');
+// console.log(driverTrack)
+
+        res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Opened the tracker", data: findOrderToTrack }));
+    } catch (error) {
+        res.status(500).json(Response({ status: "failed", message: error.message, statusCode: 500 }));
+    }
+}
+
 // way to pickup the order by driver
 // /-----------##-----------=-----
 
@@ -278,53 +394,7 @@ const orderDelivered=async(req,res,next)=>{
 }
 
 
-// get openTracker
 
-const openTrackerOfGet=async(req,res,next)=>{
-    
-        // Get the token from the request headers
-     const tokenWithBearer = req.headers.authorization;
-     let token;
-    
-     if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
-         // Extract the token without the 'Bearer ' prefix
-         token = tokenWithBearer.slice(7);
-     }
-    
-     if (!token) {
-         return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
-     }
-    
-     try {
-         // Verify the token
-         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-         if(!decoded._id==="driver"){
-          return res.status(401).json(Response({ statusCode: 401, message: 'you are not driver.',status:'faield' }));
-         }
-            const id=req.params.id
-            const findOrder=await Order.findById(id)
-            // const user=await User.findById(decoded._id)
-            // console.log(user.assignedDrivertrack===null)
-            if(findOrder.assignedDrivertrack!==null){
-                 res.status(404).json(Response({ statusCode: 404, message: 'you are assinged for diffrent track statuse.',status:'faield' }));
-     
-    
-            }else{
-            
-            
-            // const findDrivertoupdatePickup=await User.findByIdAndUpdate(findOrder.assignedDriver,{assignedDrivertrack:"waytoPickup"},{new:true})
-            const findOrdertoTrac=await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver')
-    
-    
-            res.status(200).json(Response({statusCode:200,status:"ok",message:"opend the tracker ",data:findOrdertoTrac}))
-            }
-        } catch (error) {
-            res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
-     
-        }
-    
-
-}
 
 // boutique will tracking the driver 
 //--------------------####-------------
