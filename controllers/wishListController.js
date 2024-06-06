@@ -82,10 +82,58 @@ const createWishList = async (req, res, next) => {
 
 // get all whishlist product for user 
 
+// const getAllWishlist = async (req, res, next) => {
+//       // for pagination 
+// const page = parseInt(req.query.page) || 1;
+// const limit = parseInt(req.query.limit) || 10;
+//     const tokenWithBearer = req.headers.authorization;
+//     let token;
+
+//     if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+//         token = tokenWithBearer.slice(7);
+//     }
+
+//     if (!token) {
+//         return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
+//     }
+
+//     try {
+//         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+//         // Find all wishlist items for the user
+//         const wishlistItemsLength = await Wishlist.find({ userId: decoded._id }).countDocuments()
+//              // Check if there are no canceled orders
+//      if (wishlistItemsLength === 0) {
+//         return res.status(404).json(Response({
+//             statusCode: 404,
+//             status: "failed",
+//             message: "wishlistItems Length is 0"
+//         }));
+//     }
+//     const wishlisttIdFormFolder=await WishListFolder.find({userId:decoded._id})
+//     console.log(wishlisttIdFormFolder,decoded)
+
+//         const wishlistItems = await Wishlist.find({ userId: decoded._id }).populate('productId')
+//         .skip((page - 1) * limit)
+//      .limit(limit);
+
+//         if (wishlistItems.length === 0) {
+//             return res.status(200).json(Response({ statusCode: 200, status: "success", message: "You don't have any wishlist product." }));
+//         }
+
+//         const paginationOfProduct= pagination(wishlistItemsLength,limit,page)
+
+
+//         // Return the wishlist items
+//         res.status(200).json(Response({status:"ok",statusCode:200,message:"get all the wishlist items ",data:wishlistItems,pagination:paginationOfProduct}))
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
+//     }
+// }
 const getAllWishlist = async (req, res, next) => {
-      // for pagination 
-const page = parseInt(req.query.page) || 1;
-const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
     const tokenWithBearer = req.headers.authorization;
     let token;
 
@@ -94,39 +142,50 @@ const limit = parseInt(req.query.limit) || 10;
     }
 
     if (!token) {
-        return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
+        return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.', status: 'failed' }));
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
         // Find all wishlist items for the user
-        const wishlistItemsLength = await Wishlist.find({ userId: decoded._id }).countDocuments()
-             // Check if there are no canceled orders
-     if (wishlistItemsLength === 0) {
-        return res.status(404).json(Response({
-            statusCode: 404,
-            status: "failed",
-            message: "wishlistItems Length is 0"
-        }));
-    }
-
         const wishlistItems = await Wishlist.find({ userId: decoded._id }).populate('productId')
-        .skip((page - 1) * limit)
-     .limit(limit);
+            .skip((page - 1) * limit)
+            .limit(limit);
 
         if (wishlistItems.length === 0) {
             return res.status(200).json(Response({ statusCode: 200, status: "success", message: "You don't have any wishlist product." }));
         }
 
-        const paginationOfProduct= pagination(wishlistItemsLength,limit,page)
+        // Fetch wishlist items from wishlistFolder collection
+        const wishlistFolderItems = await WishlistFolder.find({ userId: decoded._id });
 
+        // Extract wishlist IDs from wishlistFolderItems
+const wishlistFolderIds = wishlistFolderItems.flatMap(item => item.collectionOfProducts.map(product => product.wishlistId.toString()));
 
-        // Return the wishlist items
-        res.status(200).json(Response({status:"ok",statusCode:200,message:"get all the wishlist items ",data:wishlistItems,pagination:paginationOfProduct}))
+// Filter out wishlist items that are not in the wishlistFolder collection
+const filteredWishlistItems = wishlistItems.filter(item => {
+    // Check if any wishlist ID matches the current item's ID
+    return !wishlistFolderIds.includes(item._id.toString());
+});
+if(filteredWishlistItems.length===0){
+    return res.status(404).json(Response({statusCode:404,status:"success",message:"you have data but in wishlist folder"}))
+}
+
+        const paginationOfProduct= pagination(filteredWishlistItems.length,limit,page)
+
+        console.log(wishlistFolderIds,filteredWishlistItems)
+        // Return the filtered wishlist items
+        res.status(200).json(Response({
+            status: "ok",
+            statusCode: 200,
+            message: "Get all the wishlist items",
+            data: filteredWishlistItems,
+            pagination:paginationOfProduct
+        }));
     } catch (error) {
         console.error(error);
-        res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
+        res.status(500).json(Response({ status: "failed", message: error.message, statusCode: 500 }));
     }
 }
 
@@ -157,9 +216,13 @@ const createWishListCollection=async(req,res,next)=>{
     //         message: "wishlistItems Length is 0"
     //     }));
     // }
-const  { title,wishlistId}=req.body
+const  { wishlistTitle,collectionOfProducts}=req.body
 
-const createFolder=await WishlistFolder.findById
+const folder={ userId:decoded._id,wishlistTitle,collectionOfProducts}
+// const wishlistUpdate=await Wishlist.findan
+
+const createFolder=await WishlistFolder.create(folder)
+res.status(200).json(Response({status:"ok",statusCode:200,message:"get all the wishlist items ",data:createFolder}))
 
         
     } catch (error) {
@@ -171,5 +234,6 @@ const createFolder=await WishlistFolder.findById
 }
 module.exports={
     createWishList,
-    getAllWishlist
+    getAllWishlist,
+    createWishListCollection
 }

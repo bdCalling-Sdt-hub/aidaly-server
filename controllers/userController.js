@@ -374,7 +374,8 @@ if (image && Array.isArray(image)) {
         // Verify the token
         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
        const user=await User.findById(decoded._id)
-       
+       console.log(decoded,user)
+
         // Assuming you have some user data in req.body that needs to be updated
         user.name = name || user.name;
         user.email = email || user.email;
@@ -442,10 +443,13 @@ const changePasswordUseingOldPassword = async (req, res, next) => {
         }
 
         // // Hash the new password
-        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        // const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        // const hashedNewPassword = newPassword
+
+        // console.log(hashedNewPassword)
 
         // // Update the user's password in the database
-        user.password = hashedNewPassword;
+        user.password = newPassword;
         // console.log(hashedNewPassword,"hasssssss")
 
         // // Save the updated user object in the database
@@ -481,8 +485,8 @@ const ProfileOfUser=async(req,res,next)=>{
      try {
          // Verify the token
          const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-     
          const profile=await User.findById(decoded._id)
+         console.log(decoded,profile)
 
        return res.status(200).json(Response({ statusCode: 200, message: 'Profile showed successfully.', status: 'success',data:profile}));
 

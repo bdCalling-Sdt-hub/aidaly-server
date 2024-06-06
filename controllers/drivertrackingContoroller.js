@@ -422,7 +422,12 @@ const boutiqueTrackingDriver=async(req,res,next)=>{
 
            return  res.status(200).json(Response({statusCode:200,status:"ok",message:"driver is reching the location ",data:drivertrackingByOrders}))
         }
-        // return  res.status(200).json(Response({statusCode:200,status:"ok",message:"please wait for driver   ",}))
+        if(drivertrackingByOrder.assignedDrivertrack==="orderDelivered"){
+            const drivertrackingByOrders=await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver')
+
+           return  res.status(200).json(Response({statusCode:200,status:"ok",message:"driver is reching the location ",data:drivertrackingByOrders}))
+        }
+        return  res.status(200).json(Response({statusCode:200,status:"ok",message:"please wait for driver   ",}))
 
         
     } catch (error) {

@@ -337,7 +337,8 @@ const newOrder=async(req,res,next)=>{
         const totalNewOrderLength=await Order.find({status:"neworder"}).countDocuments()
         console.log(totalNewOrderLengt)
         if(totalNewOrderLength===0){
-            return res.status(404).json(Response({ statusCode: 404, message: 'you dont have any new order product.',status:'faield' }));
+            // update the status 200 to 404 
+            return res.status(200).json(Response({ statusCode: 200, message: 'you dont have any new order product.',status:'faield' }));
         }
      
         const totalNewOrder=await Order.find({status:"neworder"}).populate("orderItems")

@@ -87,6 +87,7 @@ connectToDatabase();
 // };
 
 
+
 const socketIO = (io) => {
     console.log("Socket server is listening on port 300");
 
@@ -101,154 +102,160 @@ const socketIO = (io) => {
         user.status = data.status;
         await user.save();
     })
+
+    socket.on('test',(data) =>{
+        socket.emit('test2',{"name":"hello"})
+    })
       
 socket.on('locationUpdate',async(data)=>{
-    // const {id,latitute,longitude}=data
+   
     try {
-        const { id, latitute, longitude } = data;
-        // console.log(id, latitute, longitude);
+                        // console.log(data,callback(),"i am givm");
+
+        const { id, latitute, longitude,status } = data;
+        // console.log(data);
     
         const locationFind = await Location.find({userId:id});
         const location=locationFind[0]
         // console.log(location.currentLocation.latitude);
         // console.log(location.currentLocation.longitude);
-        console.log(location)
+        // console.log(location)
     
         location.latitude = latitute;
         location.longitude = longitude;
     
         await location.save();
-        console.log("Location updated successfully!",latitute,longitude);
+        const user=await Location.find({userId:id})
+        console.log(latitute,longitude,location,user)
+
+    
+const orderTrac = await Order.find({ assignedDriver:id, assignedDrivertrack: status }).populate("assignedDriver")
+console.log(orderTrac)
+        
+        if (orderTrac && orderTrac.length > 0) {
+            
+const event=`orderStatus`
+            io.emit(event, { orderId: orderTrac[0]._id, status: orderTrac[0].status, assignedDrivertrack: orderTrac[0].assignedDrivertrack,location:user[0] });
+            console.log("Order status emitted successfully!");
+            // Response back
+                // callback({
+                //     message: "orderStatus",
+                //     type: "orderStatus",
+                    
+                // });
+        } else {
+            console.log("Driver is not currently tracking any order.",);
+        }
+
+
+
     } catch (error) {
         console.error("Error updating location:", error);
         // Handle the error here, e.g., return an error response
         // res.status(500).json({ error: "Internal server error" });
+        // Handle errors here
+                // callback({
+                //     error: "An error occurred while processing the message",
+                //     type: "Error",
+                // });
     }
     
 })
+// socket.on('locationUpdate', async (data, callback) => {
+//     try {
+//         const { id, latitute, longitude, status } = data;
+
+//         const locationFind = await Location.find({ userId: id });
+//         const location = locationFind[0];
+
+//         console.log(location);
+
+//         location.latitude = latitute;
+//         location.longitude = longitude;
+
+//         await location.save();
+
+//         const orderTrac = await Order.find({ assignedDriver: id, assignedDrivertrack: status });
+
+//         if (orderTrac && orderTrac.length > 0) {
+//             const event = `orderStatus`;
+//             socket.emit(event, { orderId: orderTrac[0]._id, status: orderTrac[0].status, assignedDrivertrack: orderTrac[0].assignedDrivertrack });
+//             console.log("Order status emitted successfully!", orderTrac);
+
+//             // Response back
+           
+//                 callback({
+//                     message: "orderStatus",
+//                     type: "orderStatus",
+//                 });
+            
+//         } else {
+//             console.log("Driver is not currently tracking any order.");
+//         }
+//     } catch (error) {
+//         console.error("Error updating location:", error);
+//         // Handle errors here
+       
+//             callback({
+//                 error: "An error occurred while processing the message",
+//                 type: "Error",
+//             });
+        
+//     }
+// });
+
+
+// socket.on('locationUpdate', async (data, callback) => {
+
+
+//     try {
+//         const { id, latitude, longitude, status } = data;
+// console.log(data)
+//         // Update the location
+//         const location = await Location.findOneAndUpdate(
+//             { userId: id },
+//             { latitude, longitude },
+//             { new: true, upsert: true }
+//         );
+
+//         const orderTrac = await Order.find({ assignedDriver: id, assignedDrivertrack: status });
+//         console.log(orderTrac)
+
+//         if (orderTrac && orderTrac.length > 0) {
+//             const event = `orderStatus`;
+//             // Emit order status event to the client
+//             socket.emit(event, { orderId: orderTrac[0]._id, status: orderTrac[0].status, assignedDrivertrack: orderTrac[0].assignedDrivertrack });
+//             console.log("Order status emitted successfully!", orderTrac);
+
+//             // Response back to the client
+//             if (callback && typeof callback === 'function') {
+//                 callback({ message: "orderStatus", type: "orderStatus" });
+//             }
+//         } else {
+//             console.log("Driver is not currently tracking any order.");
+//             // Provide feedback to the client
+//             if (callback && typeof callback === 'function') {
+//                 callback({ message: "Driver is not currently tracking any order", type: "NoOrder" });
+//             }
+//         }
+//     } catch (error) {
+//         console.error("Error updating location:", error);
+//         // Handle errors
+//         if (callback && typeof callback === 'function') {
+//             callback({ error: "An error occurred while processing the message", type: "Error" });
+//         }
+//     }
+// });
 
         socket.on('disconnect', async() => {
             console.log("you are disconnect")
             
         });
 
-        socket.emit("ShowScreenByDriverTrackingStatus", async (data) => {
-            try {
-                const driveLocationForOrder = await Order.findById(data.orderId);
-                if (driveLocationForOrder) {
-                    // Assuming driver tracking status is a field in the order document
-                    const driverTrackingStatus = driveLocationForOrder.driverTrackingStatus;
-                    // Send only the driver tracking status
-                    socket.emit("DriverTrackingStatusResponse", driverTrackingStatus);
-                } else {
-                    // If order not found
-                    socket.emit("DriverTrackingStatusResponse", "Order not found");
-                }
-            } catch (error) {
-                // Handle any errors
-                console.error("Error:", error);
-                socket.emit("DriverTrackingStatusResponse", "Error occurred");
-            }
-        });
-        
-
-//         socket.on('findNearbyDrivers', async (data) => {
-//             const id = socket.handshake.query.id;
-//             // for pagination 
-   
-//      const page = parseInt(socket.handshake.query.page) || 1;
-//      const limit = parseInt(socket.handshake.query.limit) || 10;
-//             function calculateDistance(boutique, driver) {
-//                 const R = 6371 ;  // Radius of the Earth in kilometers
-//                 const lat1 = boutique.latitude;
-//                 const lon1 = boutique.longitude;
-//                 const lat2 = driver.latitude;
-//                 const lon2 = driver.longitude;
-//                 const dLat = (lat2 - lat1) * Math.PI / 180; // Convert degrees to radians
-//                 const dLon = (lon2 - lon1) * Math.PI / 180;
-//                 const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-//                           Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-//                           Math.sin(dLon / 2) * Math.sin(dLon / 2);
-//                 const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-//                 const distance = R * c; // Distance in kilometers
-//                 return distance;
-//             }
-
-//             try {
-//                 // Find the boutique
-//                 const boutique = await User.findById(id);
-
-//                 // Get the boutique's location
-//                 const boutiqueLocation = boutique.currentLocation;
-
-//                 // Find nearby drivers within 1 kilometer radius of the boutique's location
-//                 const drivers = await Driver.find().populate("userId")
-             
-//                  // Calculate distances and filter drivers within one kilometer
-//         // const nearbyDrivers = drivers.filter(driver => {
-           
-//         //     const distance = calculateDistance(boutiqueLocation, driver.userId.currentLocation);
-//         //     console.log(distance );
-//         //     return distance < 1; // Filter drivers within one kilometer
-//         // });
-//         const nearbyDrivers = drivers.filter(driver => {
-//             // Check if the driver is active
-//             if (driver.userId.status === 'active') {
-//                 // Calculate the distance between the boutique's location and the driver's current location
-//                 const distance = calculateDistance(boutiqueLocation, driver.userId.currentLocation);
-//                 // Log the distance for debugging
-//                 console.log(distance);
-//                 // Return true if the driver is within one meter from the boutique's location
-//                 return distance <1.5; // One meter in kilometers
-//             }
-//             // Return false if the driver is not active
-//             return false;
-//         })
-       
-//         // Calculate the start and end indexes for the current page
-// const startIndex = (page - 1) * limit;
-// const endIndex = page * limit;
-
-// // Slice the nearbyDrivers array to extract the drivers for the current page
-// const driversForPage = nearbyDrivers.slice(startIndex, endIndex);
-
-//                 // // Extracting the locations of nearby drivers
-//                 // const driverLocations = nearbyDrivers.map(driver => driver.userId.currentLocation);
-
-               
-//                 const paginationOfProduct= pagination(driversForPage.length,limit,page)
-
-//                 // Emit the nearby drivers data to the client with an event name 'nearbyDrivers'
-//                 socket.emit('nearbyDrivers', Response({
-//                     status: "success",
-//                     message: "Found nearby drivers",
-//                     data: nearbyDrivers,
-//                     statusCode:200,
-//                     pagination:paginationOfProduct
-
-//                 }));
-
-//             } catch (error) {
-//                 // Handle errors here
-//                 console.error(error.message);
-//                 // Emit error message to the client
-//                 socket.emit('nearbyDriversError', {
-//                     error: "An error occurred while processing the request"
-//                 });
-//             }
-//         });
 
     });
 };
 
-// async function updateDriverStatus(driverId, status) {
-//     // Update the driver's status in the database
-//     try {
-//         await Driver.updateOne({ userId: driverId }, { status: status });
-//     } catch (error) {
-//         console.error(`Error updating driver status: ${error.message}`);
-//     }
-// }
 
 
 module.exports = socketIO;
