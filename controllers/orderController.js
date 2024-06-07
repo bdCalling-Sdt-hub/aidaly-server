@@ -696,21 +696,22 @@ console.log("Total amount of new orders:", totalAmountOfActiveOrder,activeOrders
 const boutiqueDashboard={
     activeOrder:{
         totalOrder:activeOrders.length,
-        totalAmount:totalAmountOfActiveOrder
+        totalAmount:totalAmountOfActiveOrder.toFixed(2)
     },
     compliteOrder:{
         totalOrder:compliteOrder.length,
-        totalAmount:totalCompliteOrder
+        totalAmount:totalCompliteOrder.toFixed(2)
     },
     reciveOrder:{
         totalOrder:reciveOrder.length,
-        totalAmount:reciveOrderTotal
+        totalAmount:reciveOrderTotal.toFixed(2)
     },
     totalOrdar:{
         totalOrder:TotalOrder.length,
-        totalAmount:totalOrderAmount
+        totalAmount:totalOrderAmount.toFixed(2)
     }
 }
+console.log(totalAmountOfActiveOrder)
 // console.log(activeOrders)
     
    if(allOrderedProductOfBoutique.length===0){
@@ -880,6 +881,86 @@ const assignedOrderedShowe = async (req, res, next) => {
     }
 }
 
+const deliveriedOrder=async(req,res,next)=>{
+   // for pagination 
+   const page = parseInt(req.query.page) || 1;
+   const limit = parseInt(req.query.limit) || 10;
+   // Get the token from the request headers
+   const tokenWithBearer = req.headers.authorization;
+   let token;
+
+   if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+       // Extract the token without the 'Bearer ' prefix
+       token = tokenWithBearer.slice(7);
+   }
+
+   if (!token) {
+       return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.', status: 'failed' }));
+   }
+
+   try {
+       // Verify the token
+       const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+       if (!decoded._id === "boutique") {
+           return res.status(401).json(Response({ statusCode: 401, message: 'You are not a boutique.', status: 'failed' }));
+       }
+      const deliveriedOrderLength=await Order.find({boutiqueId:decoded._id,status:"delivered"}).countDocuments()
+      const deliveriedOrder=await Order.find({boutiqueId:decoded._id,status:"delivered"})
+      const paginationOfProduct= pagination(deliveriedOrderLength,limit,page)
+
+      return res.status(200).json(Response({
+        message: "Orders with assignedDriverProgress as 'inprogress'",
+        status: "success",
+        statusCode: 200,
+        data: deliveriedOrder,
+        pagination:paginationOfProduct
+    }));
+    } catch (error) {
+        res.status(500).json(Response({ status: "failed", message: error.message, statusCode: 500 }));
+
+        
+    }
+}
+const deliveriedOrderForDriver=async(req,res,next)=>{
+   // for pagination 
+   const page = parseInt(req.query.page) || 1;
+   const limit = parseInt(req.query.limit) || 10;
+   // Get the token from the request headers
+   const tokenWithBearer = req.headers.authorization;
+   let token;
+
+   if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+       // Extract the token without the 'Bearer ' prefix
+       token = tokenWithBearer.slice(7);
+   }
+
+   if (!token) {
+       return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.', status: 'failed' }));
+   }
+
+   try {
+       // Verify the token
+       const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+       if (!decoded._id === "Driver") {
+           return res.status(401).json(Response({ statusCode: 401, message: 'You are not a boutique.', status: 'failed' }));
+       }
+      const deliveriedOrderLength=await Order.find({assignedDriver:decoded._id,assignedDrivertrack:"orderDelivered"}).countDocuments()
+      const deliveriedOrder=await Order.find({assignedDriver:decoded._id,assignedDrivertrack:"orderDelivered"})
+      const paginationOfProduct= pagination(deliveriedOrderLength,limit,page)
+
+      return res.status(200).json(Response({
+        message: "Orders with assignedDriverProgress as 'inprogress'",
+        status: "success",
+        statusCode: 200,
+        data: deliveriedOrder,
+        pagination:paginationOfProduct
+    }));
+    } catch (error) {
+        res.status(500).json(Response({ status: "failed", message: error.message, statusCode: 500 }));
+
+        
+    }
+}
 
 module.exports={
     makeOreder,
@@ -891,5 +972,7 @@ module.exports={
     orderInprogresShow,
     inprogresOrderDetails,
     assignedOrderedShowe,
-    findNearByDriver
+    findNearByDriver,
+    deliveriedOrder,
+    deliveriedOrderForDriver
 }

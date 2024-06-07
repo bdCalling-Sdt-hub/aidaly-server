@@ -1,7 +1,7 @@
 const express = require('express');
 
 
-const { makeOreder, orderInProgress, orderDetails, allOrdersOfBoutique, assignedDriver, newOrder, orderInprogresShow, inprogresOrderDetails, assignedOrderedShowe, findNearByDriver } = require('../controllers/orderController');
+const { makeOreder, orderInProgress, orderDetails, allOrdersOfBoutique, assignedDriver, newOrder, orderInprogresShow, inprogresOrderDetails, assignedOrderedShowe, findNearByDriver, deliveriedOrder, deliveriedOrderForDriver } = require('../controllers/orderController');
 const { showDriverDashBored, cancelledOrderedAsDriver, showAllCancellOrder, showNewOrderForDriver, newOrderToProgress, getAllinprogressOrderForDriver, inprogressDetailsForOrderTrac, accpetOrderDetails, cnacleOrderDetails } = require('../controllers/orderControllerForDriver');
 const router = express.Router();
 
@@ -46,5 +46,9 @@ router.get('/inprogressDetailsForOrderTrac/:id',inprogressDetailsForOrderTrac)
 router.get('/accpetOrderDetails/:id',accpetOrderDetails)
 // for the cancele order details
 router.get('/cnacleOrderDetails/:id',cnacleOrderDetails)
+// ordered succesfully for botique
+router.get('/deliveriedOrder',deliveriedOrder)
+// driver deliveried route 
+router.get('/deliveriedOrderForDriver',deliveriedOrderForDriver)
 
 module.exports = router;

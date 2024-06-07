@@ -436,7 +436,7 @@ const changePasswordUseingOldPassword = async (req, res, next) => {
         console.log(user.password,oldPassword,newPassword)
         // // Check if old password matches the stored hashed password
         const passwordMatch = await bcrypt.compare(oldPassword, user.password);
-        console.log(passwordMatch,"comaparrrrrrrrrrrrrrrrrrrrrrrrr")
+        // console.log(passwordMatch,"comaparrrrrrrrrrrrrrrrrrrrrrrrr")
 
         if (!passwordMatch) {
            return res.status(404).json(Response({ statusCode: 404, message: 'password incurrect.', status: 'success'}));

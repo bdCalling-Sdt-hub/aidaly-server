@@ -4,9 +4,11 @@ const router = express.Router();
 //import controllers
 const { signUp, signIn, forgotPassword, verifyCode, cahngePassword, resendOtp, userBlocked, logoutController, updateProfile, changePasswordUseingOldPassword, ProfileOfUser } = require('../controllers/userController');
 const upload = require('../middlewares.js/fileUpload');
-const { addVehicle, findAllDrivers, findNearByDriver, updatedVehical } = require('../controllers/vehicalController');
+const { addVehicle, findAllDrivers, findNearByDriver, updatedVehical, vehicalDetails } = require('../controllers/vehicalController');
 const { signUpBoutique, updateProfileOfboutique } = require('../controllers/boutiqueController');
 const { createLocation, getLocations, getLocationById, updateLocation } = require('../controllers/locationController');
+const { supportOfUsers } = require('../controllers/supportController');
+const { privecyPolicy } = require('../controllers/termsOfUseController');
 
 console.log('userController');
 
@@ -34,6 +36,7 @@ router.post('/vehicalDetails', upload, addVehicle);
 router.get('/findAllDrivers',findAllDrivers)
 router.get('/findNearByDriver',findNearByDriver)
 router.patch('/updatedVehical', upload,updatedVehical)
+router.get('/vehicalDetails',vehicalDetails)
 
 // boutique signup route 
 router.post('/signUp-Boutique', upload, signUpBoutique);
@@ -43,4 +46,9 @@ router.post('/locations',createLocation);
 router.get('/locations',getLocations);
 router.get('/locations/:id',getLocationById);
 router.put('/updateLocation',updateLocation);
+
+// user support 
+router.post('/supportOfUsers',supportOfUsers)
+// privecy policy of user get 
+router.get('/privecyPolicy',privecyPolicy)
 module.exports = router;

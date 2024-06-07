@@ -412,12 +412,22 @@ const boutiqueTrackingDriver=async(req,res,next)=>{
 
            return  res.status(200).json(Response({statusCode:200,status:"ok",message:"driver is on the way to pickup the order ",data:drivertrackingByOrders}))
         }
-        if(drivertrackingByOrder.assignedDrivertrack==="waytodeliver"){
+        if(drivertrackingByOrder.assignedDrivertrack==="arrivedtheStore"){
             const drivertrackingByOrders=await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver')
 
            return  res.status(200).json(Response({statusCode:200,status:"ok",message:"driver is delivering the order ",data:drivertrackingByOrders}))
         }
         if(drivertrackingByOrder.assignedDrivertrack==="arrivedAtLocation"){
+            const drivertrackingByOrders=await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver')
+
+           return  res.status(200).json(Response({statusCode:200,status:"ok",message:"driver is reching the location ",data:drivertrackingByOrders}))
+        }
+        if(drivertrackingByOrder.assignedDrivertrack==="orderPicked"){
+            const drivertrackingByOrders=await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver')
+
+           return  res.status(200).json(Response({statusCode:200,status:"ok",message:"driver is reching the location ",data:drivertrackingByOrders}))
+        }
+        if(drivertrackingByOrder.assignedDrivertrack==="waytodeliver"){
             const drivertrackingByOrders=await Order.findById(id).populate('userId boutiqueId orderItems assignedDriver')
 
            return  res.status(200).json(Response({statusCode:200,status:"ok",message:"driver is reching the location ",data:drivertrackingByOrders}))

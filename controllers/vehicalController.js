@@ -324,7 +324,36 @@ const updatedVehical = async (req, res, next) => {
     }
 };
 
+const vehicalDetails=async(req,res,next)=>{
+    // Get the token from the request headers
+   const tokenWithBearer = req.headers.authorization;
+   let token;
+
+   if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+       // Extract the token without the 'Bearer ' prefix
+       token = tokenWithBearer.slice(7);
+   }
+
+   if (!token) {
+       return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.', status: 'failed' }));
+   }
+
+   try {
+       // Verify the token
+       const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+       if (!decoded._id === "Driver") {
+           return res.status(401).json(Response({ statusCode: 401, message: 'You are not a driver.', status: 'failed' }));
+       }
+       const showDriverVehicalDetails=await Driver.find({userId:decoded._id})
+       res.status(200).json(Response({statusCode:200,status:"success", message: "vehical showed succesfully",data:showDriverVehicalDetails }));
+
+        
+    } catch (error) {
+        return res.status(500).json(Response({ status: "error", message: error.message }));
+
+        
+    }
+}
 
 
-
-module.exports = { addVehicle,findAllDrivers ,findNearByDriver,updatedVehical};
+module.exports = { addVehicle,findAllDrivers ,findNearByDriver,updatedVehical,vehicalDetails};

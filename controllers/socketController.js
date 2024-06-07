@@ -110,23 +110,19 @@ const socketIO = (io) => {
 socket.on('locationUpdate',async(data)=>{
    
     try {
-                        // console.log(data,callback(),"i am givm");
 
-        const { id, latitute, longitude,status } = data;
+        const { id, latitute, longitude,status,deliveryTime } = data;
         // console.log(data);
     
         const locationFind = await Location.find({userId:id});
         const location=locationFind[0]
-        // console.log(location.currentLocation.latitude);
-        // console.log(location.currentLocation.longitude);
-        // console.log(location)
+      
     
         location.latitude = latitute;
         location.longitude = longitude;
     
         await location.save();
         const user=await Location.find({userId:id})
-        console.log(latitute,longitude,location,user)
 
     
 const orderTrac = await Order.find({ assignedDriver:id, assignedDrivertrack: status }).populate("assignedDriver")
@@ -135,14 +131,9 @@ console.log(orderTrac)
         if (orderTrac && orderTrac.length > 0) {
             
 const event=`orderStatus`
-            io.emit(event, { orderId: orderTrac[0]._id, status: orderTrac[0].status, assignedDrivertrack: orderTrac[0].assignedDrivertrack,location:user[0] });
+            io.emit(event, { orderId: orderTrac[0]._id, status: orderTrac[0].status, assignedDrivertrack: orderTrac[0].assignedDrivertrack,location:user[0],deliveryTime:deliveryTime });
             console.log("Order status emitted successfully!");
-            // Response back
-                // callback({
-                //     message: "orderStatus",
-                //     type: "orderStatus",
-                    
-                // });
+            
         } else {
             console.log("Driver is not currently tracking any order.",);
         }
@@ -151,101 +142,10 @@ const event=`orderStatus`
 
     } catch (error) {
         console.error("Error updating location:", error);
-        // Handle the error here, e.g., return an error response
-        // res.status(500).json({ error: "Internal server error" });
-        // Handle errors here
-                // callback({
-                //     error: "An error occurred while processing the message",
-                //     type: "Error",
-                // });
+
     }
     
 })
-// socket.on('locationUpdate', async (data, callback) => {
-//     try {
-//         const { id, latitute, longitude, status } = data;
-
-//         const locationFind = await Location.find({ userId: id });
-//         const location = locationFind[0];
-
-//         console.log(location);
-
-//         location.latitude = latitute;
-//         location.longitude = longitude;
-
-//         await location.save();
-
-//         const orderTrac = await Order.find({ assignedDriver: id, assignedDrivertrack: status });
-
-//         if (orderTrac && orderTrac.length > 0) {
-//             const event = `orderStatus`;
-//             socket.emit(event, { orderId: orderTrac[0]._id, status: orderTrac[0].status, assignedDrivertrack: orderTrac[0].assignedDrivertrack });
-//             console.log("Order status emitted successfully!", orderTrac);
-
-//             // Response back
-           
-//                 callback({
-//                     message: "orderStatus",
-//                     type: "orderStatus",
-//                 });
-            
-//         } else {
-//             console.log("Driver is not currently tracking any order.");
-//         }
-//     } catch (error) {
-//         console.error("Error updating location:", error);
-//         // Handle errors here
-       
-//             callback({
-//                 error: "An error occurred while processing the message",
-//                 type: "Error",
-//             });
-        
-//     }
-// });
-
-
-// socket.on('locationUpdate', async (data, callback) => {
-
-
-//     try {
-//         const { id, latitude, longitude, status } = data;
-// console.log(data)
-//         // Update the location
-//         const location = await Location.findOneAndUpdate(
-//             { userId: id },
-//             { latitude, longitude },
-//             { new: true, upsert: true }
-//         );
-
-//         const orderTrac = await Order.find({ assignedDriver: id, assignedDrivertrack: status });
-//         console.log(orderTrac)
-
-//         if (orderTrac && orderTrac.length > 0) {
-//             const event = `orderStatus`;
-//             // Emit order status event to the client
-//             socket.emit(event, { orderId: orderTrac[0]._id, status: orderTrac[0].status, assignedDrivertrack: orderTrac[0].assignedDrivertrack });
-//             console.log("Order status emitted successfully!", orderTrac);
-
-//             // Response back to the client
-//             if (callback && typeof callback === 'function') {
-//                 callback({ message: "orderStatus", type: "orderStatus" });
-//             }
-//         } else {
-//             console.log("Driver is not currently tracking any order.");
-//             // Provide feedback to the client
-//             if (callback && typeof callback === 'function') {
-//                 callback({ message: "Driver is not currently tracking any order", type: "NoOrder" });
-//             }
-//         }
-//     } catch (error) {
-//         console.error("Error updating location:", error);
-//         // Handle errors
-//         if (callback && typeof callback === 'function') {
-//             callback({ error: "An error occurred while processing the message", type: "Error" });
-//         }
-//     }
-// });
 
         socket.on('disconnect', async() => {
             console.log("you are disconnect")
