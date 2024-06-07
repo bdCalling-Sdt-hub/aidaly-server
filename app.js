@@ -16,6 +16,7 @@ const orderRoute=require('./routes/orderRouter')
 const orderTracRoute=require('./routes/driverTrackerRouter')
 const messageRouter=require('./routes/messageRouter')
 const termsAnduseRouter=require('./routes/adminRouter')
+const privecyRouter=require('./routes/privecyRouter')
 
 
 const { connectToDatabase } = require('./helpers/connection');
@@ -51,6 +52,8 @@ app.use('/api/v1/user', userRouter);
  app.use('/api/v1/orderTracking',orderTracRoute)
  app.use('/api/v1/message',messageRouter)
  app.use('/api/v1/admin',termsAnduseRouter)
+ // privecy 
+ app.use('/api/v1/privecy',privecyRouter)
 // test route
 app.get('/api/test', (req, res) => {
   res.send('I am responding!');

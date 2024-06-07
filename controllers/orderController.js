@@ -945,7 +945,7 @@ const deliveriedOrderForDriver=async(req,res,next)=>{
            return res.status(401).json(Response({ statusCode: 401, message: 'You are not a boutique.', status: 'failed' }));
        }
       const deliveriedOrderLength=await Order.find({assignedDriver:decoded._id,assignedDrivertrack:"orderDelivered"}).countDocuments()
-      const deliveriedOrder=await Order.find({assignedDriver:decoded._id,assignedDrivertrack:"orderDelivered"})
+      const deliveriedOrder=await Order.find({assignedDriver:decoded._id,assignedDrivertrack:"orderDelivered"}).populate("boutiqueId orderItems")
       const paginationOfProduct= pagination(deliveriedOrderLength,limit,page)
 
       return res.status(200).json(Response({
@@ -961,6 +961,80 @@ const deliveriedOrderForDriver=async(req,res,next)=>{
         
     }
 }
+  const showDeliveryOrderDetailsForDriver=async(req,res,next)=>{
+    // Get the token from the request headers
+   const tokenWithBearer = req.headers.authorization;
+   let token;
+
+   if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+       // Extract the token without the 'Bearer ' prefix
+       token = tokenWithBearer.slice(7);
+   }
+
+   if (!token) {
+       return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.', status: 'failed' }));
+   }
+
+   try {
+    const id =req.params.id
+    console.log(id)
+       // Verify the token
+       const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+       if (!decoded._id === "Driver") {
+           return res.status(404).json(Response({ statusCode: 404, message: 'You are not a boutique.', status: 'failed' }));
+       }
+        const deliveredDetails=await Order.findById(id).populate("boutiqueId orderItems")
+         
+        return res.status(200).json(Response({
+            message: "Orders details showed'",
+            status: "success",
+            statusCode: 200,
+            data: deliveredDetails,
+           
+        }));
+        
+    } catch (error) {
+        res.status(500).json(Response({ status: "failed", message: error.message, statusCode: 500 }));
+
+    }
+  }
+  const showDeliveryOrderDetailsForboutique=async(req,res,next)=>{
+    // Get the token from the request headers
+   const tokenWithBearer = req.headers.authorization;
+   let token;
+
+   if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+       // Extract the token without the 'Bearer ' prefix
+       token = tokenWithBearer.slice(7);
+   }
+
+   if (!token) {
+       return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.', status: 'failed' }));
+   }
+
+   try {
+    const id =req.params.id
+    console.log(id)
+       // Verify the token
+       const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+       if (!decoded._id === "boutique") {
+           return res.status(404).json(Response({ statusCode: 404, message: 'You are not a boutique.', status: 'failed' }));
+       }
+        const deliveredDetails=await Order.findById(id).populate("boutiqueId orderItems")
+         
+        return res.status(200).json(Response({
+            message: "Orders details showed'",
+            status: "success",
+            statusCode: 200,
+            data: deliveredDetails,
+           
+        }));
+        
+    } catch (error) {
+        res.status(500).json(Response({ status: "failed", message: error.message, statusCode: 500 }));
+
+    }
+  }
 
 module.exports={
     makeOreder,
@@ -974,5 +1048,7 @@ module.exports={
     assignedOrderedShowe,
     findNearByDriver,
     deliveriedOrder,
-    deliveriedOrderForDriver
+    deliveriedOrderForDriver,
+    showDeliveryOrderDetailsForDriver,
+    showDeliveryOrderDetailsForboutique
 }

@@ -7,7 +7,7 @@ const termsOfUseSchema = new mongoose.Schema({
     userId:{type:mongoose.Schema.Types.ObjectId,ref:"User", required:true},
     privacypolicyDroperDriver:{type:String,required:true},
     otherPolicyDroperDriver:{type:String,required:true},
-    isAccepted:{type:Boolean, required:true,default:false}
+ 
 });
 
 // Create the review model
