@@ -905,7 +905,7 @@ const deliveriedOrder=async(req,res,next)=>{
            return res.status(401).json(Response({ statusCode: 401, message: 'You are not a boutique.', status: 'failed' }));
        }
       const deliveriedOrderLength=await Order.find({boutiqueId:decoded._id,status:"delivered"}).countDocuments()
-      const deliveriedOrder=await Order.find({boutiqueId:decoded._id,status:"delivered"})
+      const deliveriedOrder=await Order.find({boutiqueId:decoded._id,status:"delivered"}).populate("boutiqueId orderItems")
       const paginationOfProduct= pagination(deliveriedOrderLength,limit,page)
 
       return res.status(200).json(Response({
@@ -1036,6 +1036,51 @@ const deliveriedOrderForDriver=async(req,res,next)=>{
     }
   }
 
+  const showOrderedOfShoper=async(req,res,next)=>{
+     // for pagination 
+     const page = parseInt(req.query.page) || 1;
+     const limit = parseInt(req.query.limit) || 10;
+     // Get the token from the request headers
+   const tokenWithBearer = req.headers.authorization;
+   let token;
+
+   if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+       // Extract the token without the 'Bearer ' prefix
+       token = tokenWithBearer.slice(7);
+   }
+
+   if (!token) {
+       return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.', status: 'failed' }));
+   }
+
+   try {
+    const id =req.params.id
+    console.log(id)
+       // Verify the token
+       const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+       const totalInProgressOrderLength = await Order.find({userId:decoded._id}).countDocuments();
+       if (totalInProgressOrderLength === 0) {
+           return res.status(404).json(Response({ statusCode: 404, message: 'You don\'t have any  orders yet.', status: 'failed' }));
+       }
+      
+       const OrderItems=await Order.find({userId:decoded._id}).populate("orderItems assignedDriver")
+       .skip((page - 1) * limit)
+       .limit(limit);
+       const paginationOfProduct= pagination(totalInProgressOrderLength,limit,page)
+
+       return res.status(200).json(Response({
+        message: "Orders details showed'",
+        status: "success",
+        statusCode: 200,
+        data: OrderItems,
+        pagination:paginationOfProduct
+       
+    }));
+    } catch (error) {
+        res.status(500).json(Response({ status: "failed", message: error.message, statusCode: 500 }));
+
+    }
+  }
 module.exports={
     makeOreder,
     orderInProgress,
@@ -1050,5 +1095,6 @@ module.exports={
     deliveriedOrder,
     deliveriedOrderForDriver,
     showDeliveryOrderDetailsForDriver,
-    showDeliveryOrderDetailsForboutique
+    showDeliveryOrderDetailsForboutique,
+    showOrderedOfShoper
 }

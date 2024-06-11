@@ -11,6 +11,7 @@ const Response = require('../helpers/response');
 const pagination = require('../helpers/pagination');
 const Location = require('../models/Location');
 const Order = require('../models/Order');
+const Message = require('../models/Message');
 
 
 
@@ -145,6 +146,22 @@ const event=`orderStatus`
 
     }
     
+})
+
+socket.on('message',async(data)=>{
+    console.log(data)
+  // get all data from user
+    const {sid, pid,text,file,messageType}=data
+    const getAllmessage={UserId:sid,text,file,messageType}
+    // create data form the user
+    const  createMessage=await Message.create(getAllmessage)
+    console.log(createMessage)
+
+    const pidMessage=await Message.find({UserId:pid})
+    const sidMessage=await Message.find({UserId:sid})
+
+    const makeChate={}
+
 })
 
         socket.on('disconnect', async() => {

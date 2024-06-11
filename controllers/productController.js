@@ -147,9 +147,12 @@ const allProducts=async(req,res,next)=>{
         if (productslength === 0) {
             return res.status(404).json(Response({ statusCode: 404, message: 'this app dosnet have any product.', status: 'failed' }));
         }
-        const products= await Product.find()
+        const products = await Product.find()
+        .populate("userId")
+        .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
         .skip((page - 1) * limit)
         .limit(limit);
+    
        
         const paginationOfProduct= pagination(productslength,limit,page)
 

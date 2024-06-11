@@ -1,7 +1,7 @@
 const express = require('express');
 
 
-const { makeOreder, orderInProgress, orderDetails, allOrdersOfBoutique, assignedDriver, newOrder, orderInprogresShow, inprogresOrderDetails, assignedOrderedShowe, findNearByDriver, deliveriedOrder, deliveriedOrderForDriver, showDeliveryOrderDetailsForDriver, showDeliveryOrderDetailsForboutique } = require('../controllers/orderController');
+const { makeOreder, orderInProgress, orderDetails, allOrdersOfBoutique, assignedDriver, newOrder, orderInprogresShow, inprogresOrderDetails, assignedOrderedShowe, findNearByDriver, deliveriedOrder, deliveriedOrderForDriver, showDeliveryOrderDetailsForDriver, showDeliveryOrderDetailsForboutique, showTheOrderOfShoper, showOrderedOfShoper } = require('../controllers/orderController');
 const { showDriverDashBored, cancelledOrderedAsDriver, showAllCancellOrder, showNewOrderForDriver, newOrderToProgress, getAllinprogressOrderForDriver, inprogressDetailsForOrderTrac, accpetOrderDetails, cnacleOrderDetails } = require('../controllers/orderControllerForDriver');
 const router = express.Router();
 
@@ -52,5 +52,8 @@ router.get('/deliveriedOrder',deliveriedOrder)
 router.get('/deliveriedOrderForDriver',deliveriedOrderForDriver)
 router.get('/showDeliveryOrderDetailsForDriver/:id',showDeliveryOrderDetailsForDriver)
 router.get('/showDeliveryOrderDetailsForboutique/:id',showDeliveryOrderDetailsForboutique)
+
+// shoper get all order
+router.get('/showOrderedOfShoper',showOrderedOfShoper)
 
 module.exports = router;

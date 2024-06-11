@@ -34,24 +34,29 @@ const limit = parseInt(req.query.limit) || 10;
      }
 
 const driverGetOrder=await Order.find({assignedDriver:decoded._id})
-// console.log(driverGetOrder)
+console.log(driverGetOrder)
 
-const activeOrders = await Order.find({ assignedDriver: decoded._id, status: "inprogress" });
-const compliteOrder = await Order.find({ assignedDriver: decoded._id, status: "deliveried" });
-// console.log(activeOrders.length,compliteOrder.length)
+const activeOrders = await Order.find({ assignedDriver: decoded._id, assignedDriverProgress: "inprogress" });
+const compliteOrder = await Order.find({ assignedDriver: decoded._id, assignedDrivertrack: "orderDelivered" });
+console.log(activeOrders.length,compliteOrder.length)
 const driverDashboard={
     activeOrders:activeOrders.length,
     compliteOrders:compliteOrder.length
 
 }
 
-let totalAmount = 0;
+// let totalAmount = 0;
 
-activeOrders.forEach(order => {
-    totalAmount += parseFloat(order.totalAmount.replace(/[^\d.]/g, ''));
+// activeOrders.forEach(order => {
+//     totalAmount += parseFloat(order.totalAmount.replace(/[^\d.]/g, ''));
 
-});
-console.log(totalAmount)
+// });
+// let totalAmountDeliver = 0;
+// compliteOrder.forEach(order => {
+//     totalAmountDeliver += parseFloat(order.totalAtotalAmountDelivermount.replace(/[^\d.]/g, ''));
+
+// });
+// console.log(totalAmountDeliver)
 
 
 
