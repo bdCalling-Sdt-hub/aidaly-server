@@ -301,24 +301,38 @@ const showWishlistFolderByName = async (req, res) => {
             return res.status(400).json(Response({ message: 'Folder name is required.' }));
         }
 
+         
         // Find the wishlist folder by name
-        const wishlistFolder = await WishlistFolder.findOne({ wishlistTitle: name, userId:decoded._id}).populate("collectionOfProducts")
-        .populate({
-            path: 'collectionOfProducts',
-            populate: {
-                path: 'wishlistId',
+        let wishlistFolder = await WishlistFolder.findOne({ wishlistTitle: name, userId: decoded._id })
+            .populate({
+                path: 'collectionOfProducts',
                 populate: {
-                    path: 'productId', // Add additional nested population here if needed
-                    populate:{
-                       path: 'userId'
+                    path: 'wishlistId',
+                    match: { _id: { $ne: null } }, // Exclude wishlist items with null wishlistId
+                    populate: {
+                        path: 'productId',
+                        populate: {
+                            path: 'userId'
+                        }
                     }
                 }
-            }
-        });
+            });
 
         if (!wishlistFolder) {
             return res.status(404).json(Response({ statusCode:404,message: 'Wishlist folder not found.' }));
         }
+
+
+        // Filter out wishlist items with null wishlistId
+        wishlistFolder.collectionOfProducts = wishlistFolder.collectionOfProducts.filter(product => product.wishlistId !== null);
+         // If the length of collectionOfProducts is 0, delete the wishlistFolder document
+         if (wishlistFolder.collectionOfProducts.length === 0) {
+            await wishlistFolder.deleteOne();
+            return res.status(200).json(Response({ message: 'Wishlist folder deleted.', data: null }));
+        }
+
+        // Save the updated wishlistFolder
+        wishlistFolder = await wishlistFolder.save();
 
         return res.status(200).json(Response({ message: 'Wishlist folder found.', data: wishlistFolder }));
     } catch (error) {
@@ -345,10 +359,14 @@ const getFoldername=async(req,res,next)=>{
         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
         const getFolder = await WishListFolder.find({ userId: decoded._id });
+
+        if (getFolder.length === 0) {
+            return res.status(404).json(Response({ message: 'Wishlist folders not found.', statusCode:404 }));
+        }
           const names = getFolder.map(folder => folder.wishlistTitle);
             console.log(names);
 
-        return res.status(200).json(Response({ message: 'Wishlist folder found.', data: names }));
+        return res.status(200).json(Response({ message: 'Wishlist folder found.', data: names,statusCode:200 }));
 
         
     } catch (error) {

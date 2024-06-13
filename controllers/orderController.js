@@ -1058,12 +1058,12 @@ const deliveriedOrderForDriver=async(req,res,next)=>{
     console.log(id)
        // Verify the token
        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-       const totalInProgressOrderLength = await Order.find({userId:decoded._id}).countDocuments();
+       const totalInProgressOrderLength = await Order.find({userId:decoded._id,status: { $nin: 'delivered',} }).countDocuments();
        if (totalInProgressOrderLength === 0) {
            return res.status(404).json(Response({ statusCode: 404, message: 'You don\'t have any  orders yet.', status: 'failed' }));
        }
       
-       const OrderItems=await Order.find({userId:decoded._id}).populate("orderItems assignedDriver")
+       const OrderItems=await Order.find({userId:decoded._id,status: { $nin: 'delivered',} }).populate("orderItems assignedDriver")
        .skip((page - 1) * limit)
        .limit(limit);
        const paginationOfProduct= pagination(totalInProgressOrderLength,limit,page)
