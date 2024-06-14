@@ -8,7 +8,7 @@ const messageSchema = new mongoose.Schema({
    messageType:{
     type:String,
     enum: ['text', 'file','text/file'],
-    required:true
+    required:false
     
 
    }

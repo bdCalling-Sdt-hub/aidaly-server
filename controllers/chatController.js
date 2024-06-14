@@ -199,7 +199,7 @@ const objectId = new ObjectId(id);
         if (existingChat) {
             // If a chat already exists, update its messages array with the new message
            const data= await Chat.findByIdAndUpdate(existingChat._id,{ $push: { messages: {sid:objectId} }});
-           console.log(data)
+        //    console.log(data.messages.length-1)
 
             // Respond with success message
             return res.status(200).json({ statusCode: 200, status: "ok", message: "Message added to existing chat.", data: data });
@@ -207,12 +207,14 @@ const objectId = new ObjectId(id);
 
         // If no existing chat, create a new one
         const messages = await Message.findById(id);
-        console.log(messages,"ldskflkdsjfkjdskfjlkdsjflksdjlkfjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj")
-        const chat = new Chat({ pid: pid, sid: userId, messages: [messages._id] });
-        await chat.save();
+        console.log(messages,"this is messgaer")
+        
+        const chat = await Chat.create({ pid: pid, sid: userId, messages: [messages] });
+
+        
 
         // Respond with success message
-        return res.status(200).json({ statusCode: 200, status: "ok", message: "New chat created.",  });
+        return res.status(200).json({ statusCode: 200, status: "ok", message: "New chat created.", data:chat });
     }catch (error) {
         // Respond with error message if an error occurs
         return res.status(500).json({ status: "failed", message: error.message, statusCode: 500 });
@@ -294,21 +296,80 @@ const objectId = new ObjectId(id);
 // Controller function to retrieve all chats
 const getAllChats = async (req, res) => {
     try {
-        const chats = await Chat.find();
-        res.status(200).json(chats);
-    } catch (error) {
-        res.status(500).json({ error: 'Server error' });
-    }
+         // Get the token from the request headers
+         const tokenWithBearer = req.headers.authorization;
+         let token;
+ 
+         if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+             // Extract the token without the 'Bearer ' prefix
+             token = tokenWithBearer.slice(7);
+         }
+ 
+         if (!token) {
+             return res.status(401).json({ statusCode: 401, message: 'Token is missing.', status: 'failed' });
+         }
+ 
+         // Verify the token
+         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+ 
+        // const chats = await Chat.find({sid:decoded._id}).populate("pid")
+  
+        // const lastMessages = chats.map(async(chat) => {
+        //     const lastMessage = chat.messages[chat.messages.length - 1]; // Extract the last message from the array
+        //     const message=await Message.find({_id:lastMessage.sid})
+        //     console.log(message)
+
+        //     return message;
+        // });
+        const chats = await Chat.find({ sid: decoded._id }).populate("pid");
+
+const lastMessages = await Promise.all(chats.map(async (chat) => {
+    const lastMessage = chat.messages[chat.messages.length - 1]; // Extract the last message from the array
+    const message = await Message.findById(lastMessage._id).populate("sid"); // Populate the sender information
+    
+    // Merge the last message into the chat object
+    return Object.assign({}, chat.toObject(), { lastMessage });
+}));
+
+console.log(lastMessages);
+
+        console.log( lastMessages)
+            return res.status(200).json({ statusCode: 200, status: "ok", message: "Chat is showing .", data: lastMessages});
+} catch (error) {
+        return res.status(500).json({ status: "failed", message: error.message, statusCode: 500 });
+}
 };
 
 // Controller function to retrieve a specific chat by ID
 const getChatById = async (req, res) => {
     try {
-        const chat = await Chat.findById(req.params.id).populate("pid sid")
+         // Get the token from the request headers
+         const tokenWithBearer = req.headers.authorization;
+         let token;
+ 
+         if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+             // Extract the token without the 'Bearer ' prefix
+             token = tokenWithBearer.slice(7);
+         }
+ 
+         if (!token) {
+             return res.status(401).json({ statusCode: 401, message: 'Token is missing.', status: 'failed' });
+         }
+ 
+         // Verify the token
+         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+ 
+        const chat = await Chat.findById(req.params.id).populate()
         // .populate("pid,sid")
         .populate({
             path: 'messages',
-            populate: ("pid sid") // Specify the fields within the messages document to populate
+            populate: [
+                { path: 'pid' }, // Populate the 'pid' field
+                { 
+                    path: 'sid',
+                    populate: { path: 'UserId' } // Populate a nested field within 'sid'
+                } 
+            ]
         });
         if (!chat) {
             return res.status(404).json({ error: 'Chat not found' });
