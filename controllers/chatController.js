@@ -222,76 +222,6 @@ const objectId = new ObjectId(id);
 };
 
 
-// const createChat = async (req, res) => {
-//     try {
-//         // Get the token from the request headers
-//         const tokenWithBearer = req.headers.authorization;
-//         let token;
-
-//         if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
-//             // Extract the token without the 'Bearer ' prefix
-//             token = tokenWithBearer.slice(7);
-//         }
-
-//         if (!token) {
-//             return res.status(401).json({ statusCode: 401, message: 'Token is missing.', status: 'failed' });
-//         }
-
-//         // Verify the token
-//         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-
-//         // Extract user ID from decoded token
-//         const userId = decoded._id;
-
-//         // Retrieve sender ID and messages from request body
-//         const { sid, messages } = req.body;
-
-//         // Find messages sent by the current user
-//         const userMessages = await Message.find({ UserId: userId });
-
-//         // Determine whether the current user is the sender or receiver
-//         const isSender = sid === userId;
-
-//         // Create an array to store updated messages
-//         const updatedMessages = [];
-
-//         // Loop through the messages
-//         for (const message of messages) {
-//             // Determine the participant ID (pid) and sender ID (sid)
-//             const pid = isSender ? userId : sid;
-//             const currentSid = isSender ? sid : userId;
-
-//             // Find the message ID for the sender
-//             const messageExists = userMessages.find(msg => msg._id === message);
-
-//             // If the current user is the sender and the message exists, update the sid
-//             // Otherwise, set the sid to the sender ID
-//             const updatedSid = isSender && messageExists ? currentSid : sid;
-
-//             // Add the updated message to the array
-//             updatedMessages.push({ pid, sid: updatedSid, message });
-//         }
-
-//         // Find an existing chat document
-//         const existingChat = await Chat.findOne({ pid: userId, sid });
-
-//         if (existingChat) {
-//             // Concatenate the existing messages with the updated messages
-//             existingChat.messages = [...existingChat.messages, ...updatedMessages];
-//             await existingChat.save();
-//             return res.status(200).json({ statusCode: 200, status: "ok", message: "Chat is updated.", data: existingChat });
-//         } else {
-//             // Create a new chat document
-//             const chat = new Chat({ pid: userId, sid, messages: updatedMessages });
-//             await chat.save();
-//             return res.status(200).json({ statusCode: 200, status: "ok", message: "Chat is created.", data: chat });
-//         }
-//     } catch (error) {
-//         // Respond with error message if an error occurs
-//         return res.status(500).json({ status: "failed", message: error.message, statusCode: 500 });
-//     }
-// };
-
 
 // Controller function to retrieve all chats
 const getAllChats = async (req, res) => {
@@ -312,31 +242,26 @@ const getAllChats = async (req, res) => {
          // Verify the token
          const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
  
-        // const chats = await Chat.find({sid:decoded._id}).populate("pid")
-  
-        // const lastMessages = chats.map(async(chat) => {
-        //     const lastMessage = chat.messages[chat.messages.length - 1]; // Extract the last message from the array
-        //     const message=await Message.find({_id:lastMessage.sid})
-        //     console.log(message)
-
-        //     return message;
-        // });
+        
         const chats = await Chat.find({ sid: decoded._id }).populate("pid");
 
-const lastMessages = await Promise.all(chats.map(async (chat) => {
-    const lastMessage = chat.messages[chat.messages.length - 1]; // Extract the last message from the array
-    const message = await Message.findById(lastMessage._id).populate("sid"); // Populate the sender information
-    
-    // Merge the last message into the chat object
-    return Object.assign({}, chat.toObject(), { lastMessage });
-}));
+          const lastMessages = await Promise.all(chats.map(async (chat) => {
+            const lastMessage = chat.messages[chat.messages.length - 1]; // Extract the last message from the array
+            const newmessage=lastMessage.sid
+            // const message = await Message.findById(lastMessage._id).populate("sid"); // Populate the sender information
+            let lastmessag = await Message.find({ _id: { $in: newmessage } }) // Fetch messages based on sid values
+// console.log(lastMessage,"dsljfsdjfkljslkfjsfjl")
+        //  lastMessages[0].lastmessage.te
+            return Object.assign({}, chat.toObject(), { lastmessag });
+        }));
+     
+        // const messageSids = lastMessages.map(message => message.sid); // Extract all sid values
 
-console.log(lastMessages);
+        // const message2 = await Message.find({ _id: { $in: messageSids } }); // Fetch messages based on sid values
 
-        console.log( lastMessages)
-            return res.status(200).json({ statusCode: 200, status: "ok", message: "Chat is showing .", data: lastMessages});
+            return res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Chat is showing .", data: lastMessages}));
 } catch (error) {
-        return res.status(500).json({ status: "failed", message: error.message, statusCode: 500 });
+        return res.status(500).json(Response({ status: "failed", message: error.message, statusCode: 500 }));
 }
 };
 
