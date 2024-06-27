@@ -30,6 +30,6 @@ const upload = multer({
     limits: { fileSize: MAX_FILE_SIZE }, // Set max file size limit
     fileFilter: fileFilter,
 }).fields([{name:"image",maxCount:1},{name:"driverLicense",maxCount:1},
-{name:"registration",maxCount:1},{name:"policeCheck",maxCount:1},{name:"registrationNumber",maxCount:1},{name:"boutiqueImage",maxCount:1},{name:"productImage1",maxCount:5},{name:"categoryImage",maxCount:1},{name:"reviewImage",maxCount:5}])
+{name:"registration",maxCount:1},{name:"policeCheck",maxCount:1},{name:"registrationNumber",maxCount:1},{name:"boutiqueImage",maxCount:1},{name:"productImage1",maxCount:5},{name:"categoryImage",maxCount:1},{name:"reviewImage",maxCount:5},{name:"messageImage",maxCount:3}])
 
 module.exports = upload;

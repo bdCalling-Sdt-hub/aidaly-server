@@ -28,65 +28,6 @@ const io = new Server(server, {
 connectToDatabase();
 
 
-// const socketIO = (io) => {
-    
-//     console.log("Socket server is lenening on port 300")
-//     io.on('connection', (socket) => {
-//         console.log(` New client connected`);
-
-//         socket.on('disconnect', () => {
-//             console.log(` Client disconnected`);
-//         });
-
-//         socket.on('message', async (msg, callback) => {
-//             try {
-
-//                 console.log(msg,callback());
-
-
-//                 // // Search for existing chat between sender and receiver, regardless of the order of senderId and participant
-//                 // const searchChat = await Chat.findOne({
-//                 //     $or: [
-//                 //         { senderId: msg.senderId, participant: msg.participant },
-//                 //         { senderId: msg.participant, participant: msg.senderId }
-//                 //     ]
-//                 // });
-
-//                 // // If chat does not exist, create a new one
-//                 // if (!searchChat) {
-//                 //     // Create chat and wait for the result
-//                 //     const newChat = await createChat(msg);
-//                 //     msg.chatId = newChat._id;
-//                 // } else {
-//                 //     msg.chatId = searchChat._id;
-//                 // }
-
-//                 // // Save message
-//                 // const message = await saveMessage(msg);
-
-//                 // // Send message to specific user
-//                 // io.emit(`new::${msg.chatId}`, message);
-
-//                 // Response back
-//                 callback({
-//                     message: "message",
-//                     type: "Message",
-                    
-//                 });
-
-//             } catch (error) {
-//                 console.error(error.message);
-//                 // Handle errors here
-//                 callback({
-//                     error: "An error occurred while processing the message",
-//                     type: "Error",
-//                 });
-//             }
-//         });
-
-//     });
-// };
-
 
 
 const socketIO = (io) => {
@@ -148,20 +89,24 @@ const event=`orderStatus`
     
 })
 
-socket.on('message',async(data)=>{
-    console.log(data)
-  // get all data from user
-    const {sid, pid,text,file,messageType}=data
-    const getAllmessage={UserId:sid,text,file,messageType}
-    // create data form the user
-    const  createMessage=await Message.create(getAllmessage)
-    console.log(createMessage)
+socket.on('message',async(data) =>{
+    const {text,chatId,receiverId,sendId}=data
+    console.log(text,chatId,receiverId,sendId)
 
-    const pidMessage=await Message.find({UserId:pid})
-    const sidMessage=await Message.find({UserId:sid})
+    const message={
+        chatId:chatId,
+        senderId:sendId,
+        receiverId:receiverId,
+        text:text,
+        messageType:"text"
 
-    const makeChate={}
 
+    }
+    const createMessage= await Message.create(message)
+    console.log(createMessage)           
+    io.emit("sendMessage",{message:createMessage.text} );
+
+    // socket.emit('test2',{"name":"hello",data})
 })
 
         socket.on('disconnect', async() => {
