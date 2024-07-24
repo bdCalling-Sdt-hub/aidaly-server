@@ -28,7 +28,7 @@ const openTrackerOfGet=async(req,res,next)=>{
  try {
      // Verify the token
      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-     if(!decoded._id==="driver"){
+     if(!decoded.role==="driver"){
       return res.status(401).json(Response({ statusCode: 401, message: 'you are not driver.',status:'faield' }));
      }
         const id=req.params.id
@@ -187,7 +187,7 @@ const wayToPickupDriver=async(req,res,next)=>{
  try {
      // Verify the token
      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-     if(!decoded._id==="driver"){
+     if(!decoded.role==="driver"){
       return res.status(401).json(Response({ statusCode: 401, message: 'you are not driver.',status:'faield' }));
      }
         const id=req.params.id
@@ -231,7 +231,7 @@ const orderPicked=async(req,res,next)=>{
  try {
      // Verify the token
      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-     if(!decoded._id==="driver"){
+     if(!decoded.role==="driver"){
       return res.status(401).json(Response({ statusCode: 401, message: 'you are not driver.',status:'faield' }));
      }
         const id=req.params.id
@@ -275,7 +275,7 @@ const onTheWayToDeliver=async(req,res,next)=>{
  try {
      // Verify the token
      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-     if(!decoded._id==="driver"){
+     if(!decoded.role==="driver"){
       return res.status(401).json(Response({ statusCode: 401, message: 'you are not driver.',status:'faield' }));
      }
         const id=req.params.id
@@ -319,7 +319,7 @@ const arrivedAtlocation=async(req,res,next)=>{
  try {
      // Verify the token
      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-     if(!decoded._id==="driver"){
+     if(!decoded.role==="driver"){
       return res.status(401).json(Response({ statusCode: 401, message: 'you are not driver.',status:'faield' }));
      }
         const id=req.params.id
@@ -364,7 +364,7 @@ const orderDelivered=async(req,res,next)=>{
  try {
      // Verify the token
      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-     if(!decoded._id==="driver"){
+     if(!decoded.role==="driver"){
       return res.status(401).json(Response({ statusCode: 401, message: 'you are not driver.',status:'faield' }));
      }
         const id=req.params.id
