@@ -1,7 +1,7 @@
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
-
+const cors = require('cors');
 var cookieParser = require('cookie-parser');
 require('dotenv').config();
 var logger = require('morgan');
@@ -31,6 +31,13 @@ connectToDatabase();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
+
+// CORS setup
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // app.use(validateResponse);
 app.use(logger('dev'));

@@ -41,14 +41,16 @@ const userSchema = new mongoose.Schema({
     role: { type: String, required: false, enum: ["admin", "shopper", "boutique", "driver"],default:"shopper"  },
     oneTimeCode: { type: String, required: false, default: null },
    
-}, {
+},{ timestamps: true },
+ {
     toJSON: {
         transform(doc, ret) {
             delete ret.password;
         },
     },
 },
-    { timestamps: true },
+    
+    
 );
 
 module.exports = mongoose.model('User', userSchema);

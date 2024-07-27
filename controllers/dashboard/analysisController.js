@@ -197,21 +197,56 @@ const todayorderDetailsinDashboared = async (req, res) => {
             return res.status(401).json(Response({ statusCode: 401, message: 'You are not authorized as admin.', status: 'failed' }));
         }
         
-        // Get today's date in UTC timezone
-        const today = new Date().toISOString().split('T')[0];
+   
+    // Get today's and yesterday's dates in UTC timezone
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayDate = yesterday.toISOString().split('T')[0];
 
-        // Find orders created today
-        const todayOrders = await Order.find({
-            createdAt: {
-                $gte: new Date(today + 'T00:00:00Z'), // Start of today
-                $lte: new Date(today + 'T23:59:59Z') // End of today
-            }
-        });
+    // Find orders created today
+    const todayOrders = await Order.find({
+        createdAt: {
+            $gte: new Date(today + 'T00:00:00Z'), // Start of today
+            $lte: new Date(today + 'T23:59:59Z') // End of today
+        }
+    });
 
+    // Find orders created yesterday
+    const yesterdayOrders = await Order.find({
+        createdAt: {
+            $gte: new Date(yesterdayDate + 'T00:00:00Z'), // Start of yesterday
+            $lte: new Date(yesterdayDate + 'T23:59:59Z') // End of yesterday
+        }
+    });
+
+     // Calculate the percentage change
+     const todayCount = todayOrders.length;
+     const yesterdayCount = yesterdayOrders.length;
+     let percentageChange = 0;
+     let changeType = 'No Change';
+
+     if (yesterdayCount > 0) {
+         percentageChange = ((todayCount - yesterdayCount) / yesterdayCount) * 100;
+         changeType = percentageChange >= 0 ? 'Positive' : 'Negative';
+     } else if (todayCount > 0) {
+         percentageChange = 100; // If there were no orders yesterday and there are orders today
+         changeType = 'Positive';
+     }
+
+     // Round percentageChange to 2 decimal places
+     percentageChange = parseFloat(percentageChange.toFixed(2));
+
+     const data = {
+         todayOrderCount: todayCount,
+         yesterdayOrderCount: yesterdayCount,
+         percentageChange: percentageChange, // Rounded to 2 decimal places
+         changeType: changeType // Indicates if the change is positive or negative
+     };
         return res.status(200).json({
             statusCode: 200,
             message: 'Today\'s orders fetched successfully.',
-            data: todayOrders
+            data: data
         });
         
     } catch (error) {

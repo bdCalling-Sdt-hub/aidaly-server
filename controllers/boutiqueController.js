@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const signUpBoutique = async (req, res) => {
     try {
         const { name, email, password, address, rate,phone,  city, state, description } = req.body;
+        console.log(description )
       
         const {image} = req.files;
       const files = [];
@@ -70,7 +71,7 @@ console.log(image,files)
     }
 };
 const updateProfileOfboutique=async(req,res,next)=>{
-    const {name,email,phone,address,rate, city,state,}=req.body
+    const {name,email,phone,address,rate, city,state,description}=req.body
 
     const { image } = req.files || {};
 const files = [];
@@ -113,6 +114,7 @@ if (image && Array.isArray(image)) {
         user.state=state ||user.state
         user.image=files[0]|| user.image;
         user.rate=rate|| user.rate
+        user.description=description || user.description
         
 
         // Save the updated user profile

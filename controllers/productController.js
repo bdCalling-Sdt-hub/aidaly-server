@@ -142,12 +142,12 @@ const allProducts=async(req,res,next)=>{
 
      
 
-        const productslength= await Product.find().countDocuments()
+        const productslength= await Product.find({isAproved:true}).countDocuments()
         // if page lent is 0 then call it 
         if (productslength === 0) {
             return res.status(404).json(Response({ statusCode: 404, message: 'this app dosnet have any product.', status: 'failed' }));
         }
-        const products = await Product.find()
+        const products = await Product.find({isAproved:true})
         .populate("userId")
         .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
         .skip((page - 1) * limit)
@@ -222,10 +222,12 @@ const allProducts=async(req,res,next)=>{
           const category = req.params.category;
           let products = [];
           let totalProducts = 0;
+
            // Define the condition for inventory quantity
         const inventoryCondition = { $gt: "0" };
-        const updatedForInvertoyQunetity=await Product.find({inventoryQuantity:inventoryCondition,category:category})
+        const updatedForInvertoyQunetity=await Product.find({isAproved:true,inventoryQuantity:inventoryCondition,category:category})
           // If no products found, mark the category as not available
+          
           if (updatedForInvertoyQunetity.length === 0) {
             // Mark category as not available
             // await Category.updateOne({ name: category }, { $set: { available: false } });
@@ -243,7 +245,7 @@ const allProducts=async(req,res,next)=>{
           // Handle "new-arrivals" category
           if (category === "new-arrivals") {
             // Find products with category "new-arrivals"
-            const productNewArrivals = await Product.find({ category: category, isNewArrivel: { $in: [true, false] },inventoryQuantity:inventoryCondition})
+            const productNewArrivals = await Product.find({isAproved:true, category: category, isNewArrivel: { $in: [true, false] },inventoryQuantity:inventoryCondition})
               .populate('userId', 'name image isBlocked');
       
             // Filter out products with blocked users
@@ -272,7 +274,7 @@ const allProducts=async(req,res,next)=>{
       
           } else {
             // Find the total number of products in the specified category (excluding blocked users)
-            const allProductsInCategory = await Product.find({ category, isNewArrivel: false ,inventoryQuantity:inventoryCondition})
+            const allProductsInCategory = await Product.find({isAproved:true, category, isNewArrivel: false ,inventoryQuantity:inventoryCondition})
               .populate('userId', 'name image isBlocked');
             const unblockedProductsInCategory = allProductsInCategory.filter(product => !product.userId.isBlocked);
             totalProducts = unblockedProductsInCategory.length;
@@ -289,6 +291,11 @@ const allProducts=async(req,res,next)=>{
               pageSize: limit
             };
             const paginationOf= pagination(totalProducts,limit,page)
+            if(allProductsInCategory.length===0){
+                return res.status(404).json(Response({ statusCode: 404, message: 'this app dosnet have any product.', status: 'failed' }));
+
+
+            }
             // Response
             res.status(200).json(Response({
               message: "Retrieved products successfully by category",
@@ -318,7 +325,7 @@ const ProductDetails=async(req,res,next)=>{
         res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Product show successfully",data:{product} }));
     } catch (error) {
          // Handle any errors
-         return res.status(500).json(Response({ statusCode: 500, message: 'Internal server error.',status:'server error' })); next(error);
+         return res.status(500).json(Response({ statusCode: 500, message: error.message,status:'server error' })); next(error);
         
     }
 
@@ -328,7 +335,7 @@ const showProductByUserId=async(req,res,next)=>{
     const id=req.params.id
     // for pagination 
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 1;
+        const limit = parseInt(req.query.limit) || 10;
     
     try {
         const user=await User.findById(id)

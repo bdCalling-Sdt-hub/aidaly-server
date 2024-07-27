@@ -58,6 +58,10 @@ size: {
         type: Boolean,
         default: false
     },
+    isAproved: {
+        type: Boolean,
+        default: false
+    },
     
     createdAt: {
         type: Date,

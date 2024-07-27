@@ -1058,6 +1058,12 @@ const deliveriedOrderForDriver=async(req,res,next)=>{
     console.log(id)
        // Verify the token
        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+    //    if(decoded.role==="shopper"){
+    //     return res.status(404).json(Response({ statusCode: 404, message: 'you are not shoper', status: 'failed' }));
+
+
+    //    }
        const totalInProgressOrderLength = await Order.find({userId:decoded._id,status: { $nin: 'delivered',} }).countDocuments();
        if (totalInProgressOrderLength === 0) {
            return res.status(404).json(Response({ statusCode: 404, message: 'You don\'t have any  orders yet.', status: 'failed' }));
