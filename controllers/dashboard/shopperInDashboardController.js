@@ -111,7 +111,7 @@ if(!decoded.role==="admin"){
       // Add date filter to query
       query.createdAt = { $gte: startDate, $lte: endDate };
     }
-  const showuserByOrder=await Order.find(query).populate("userId boutiqueId")
+  const showuserByOrder=await Order.find(query).populate("userId boutiqueId orderItems")
   .skip((page - 1) * limit)  // Pagination: skip previous pages
       .limit(limit)              // Limit the number of results per page
       .sort({ createdAt: -1 });  // Sort by creation date descending

@@ -9,6 +9,10 @@ const  getAllBoutiqueForAdmin=async(req,res)=>{
         // for pagination 
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
+      
+
+        
+
         // Get the token from the request headers
         const tokenWithBearer = req.headers.authorization;
         let token;
@@ -122,8 +126,217 @@ const boutiqueDetails=async(req,res)=>{
     }
 }
 
+const sendFeedback=async(req,res)=>{
+    try {
+        
+// Get the token from the request headers
+const tokenWithBearer = req.headers.authorization;
+let token;
+
+if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+    // Extract the token without the 'Bearer ' prefix
+    token = tokenWithBearer.slice(7);
+}
+
+if (!token) {
+    return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.', status: 'failed' }));
+}
+
+// Verify the token
+const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+if(!decoded.role==="admin"){
+   return res.status(401).json(Response({ statusCode: 401, message: 'you are not admin.',status:'faield' }));
+  }
+
+  const {title,description,boutiqueId}=req.body
+  const { feedBackImage } = req.files;
+
+
+   
+  const files = [];
+  if (req.files) {
+    feedBackImage.forEach((feedBackImage) => {
+      const publicFileUrl = `/images/users/${feedBackImage.filename}`;
+      
+      files.push({
+        publicFileUrl,
+        path: feedBackImage.filename,
+      });
+      // console.log(files);
+    });
+  }
+  const data={
+    title:title,
+    boutiqueId:boutiqueId,
+    feedbackDescription:description,
+    feedBackImage:files[0]
+  }
+  const doFeedBack=await Feedback.create(data)
+  return res.status(200).json(Response({ statusCode: 200, message: "feedback create succesfully ",data:doFeedBack}));
+
+        
+    } catch (error) {
+        return res.status(500).json(Response({ statusCode: 500, message: error.message,status:'server error' }));
+
+        
+    }
+}
+const updateProfileOfboutiqueInDashboared=async(req,res,next)=>{
+    const {name,email,phone,address,rate, city,state,description,id}=req.body
+
+    const { image } = req.files || {};
+const files = [];
+
+// Check if there are uploaded files
+if (image && Array.isArray(image)) {
+    image.forEach((img) => {
+        const publicFileUrl = `/images/users/${img.filename}`;
+        files.push({
+            publicFileUrl,
+            path: img.filename,
+        });
+    });
+}
+   
+
+    const tokenWithBearer = req.headers.authorization;
+    let token;
+
+    if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+        // Extract the token without the 'Bearer ' prefix
+        token = tokenWithBearer.slice(7);
+    }
+
+    if (!token) {
+        return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
+    }
+
+    try {
+        // Verify the token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        if(!decoded.role==="admin"){
+            return res.status(401).json(Response({ statusCode: 401, message: 'you are not admin.',status:'faield' }));
+           }
+           
+       const user=await User.findById(id)
+       
+        // Assuming you have some user data in req.body that needs to be updated
+        user.name = name || user.name;
+        user.email = email || user.email;
+        user.phone=phone ||user.phone;
+        user.address=address|| user.address;
+        user.city=city|| user.city;
+        user.state=state ||user.state
+        user.image=files[0]|| user.image;
+        user.rate=rate|| user.rate
+        user.description=description || user.description
+        
+
+        // Save the updated user profile
+       const users= await user.save();
+
+        // Respond with success message
+        res.status(200).json(Response({ statusCode: 200, message: 'Profile updated successfully.', status: 'success',data:users}));
+
+    }catch(error){
+        res.status(500).json(Response({ statusCode: 500, message: error.message,status:'Failed' }));
+    }
+
+
+}
+
+const addBoutique=async(req,res)=>{
+    try {
+        const tokenWithBearer = req.headers.authorization;
+    let token;
+
+    if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
+        // Extract the token without the 'Bearer ' prefix
+        token = tokenWithBearer.slice(7);
+    }
+
+    if (!token) {
+        return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
+    }
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    if(!decoded.role==="admin"){
+        return res.status(401).json(Response({ statusCode: 401, message: 'you are not admin.',status:'faield' }));
+       }
+
+       const { name, email, password, address, rate,phone,  city, state, description } = req.body;
+       console.log(description )
+     
+       const {image} = req.files;
+     const files = [];
+     if (req.files) {
+         image.forEach((image) => {
+         const publicFileUrl = `/images/users/${image.filename}`;
+         
+         files.push({
+           publicFileUrl,
+           path: image.filename,
+         });
+         // console.log(files);
+       });
+     }
+console.log(image,files)
+
+       // Validate request body
+       if (!name) {
+           return res.status(400).json(Response({statusCode:400,status:"name required", message: "Name is required" }));
+       }
+
+       if (!email) {
+           return res.status(400).json(Response({status:"email ",statusCode:400, message: "Email is required" }));
+       }
+
+       if (!password) {
+           return res.status(400).json(Response({status:"password faild",statusCode:400, message: "Password is required" }));
+       }
+
+       const user = await User.findOne({ email });
+       if (user) {
+           return res.status(400).json(Response({ status:"faild",statusCode:400, message: "User already exists" }));
+       }
+
+       const userDetails = {
+           name,
+           email,
+           password,
+           image,
+           phone,
+           rate,
+           city,
+           state,
+           address,
+           role: "boutique",
+           description
+       };
+ // Check if image is provided in the request
+ if (files && files.length > 0) {
+   userDetails.image = files[0];
+ }
+
+  const boutique= await User.create(userDetails)
+
+    // Respond with success message
+    res.status(200).json(Response({ statusCode: 200, message: 'Profile create   successfully.', status: 'success',data:boutique}));
+
+        
+
+        
+    } catch (error) {
+        res.status(500).json(Response({ statusCode: 500, message: error.message,status:'Failed' }));
+
+        
+    }
+}
 module.exports={
     getAllBoutiqueForAdmin,
-    boutiqueDetails
+    boutiqueDetails,
+    sendFeedback,
+    updateProfileOfboutiqueInDashboared,
+    addBoutique
 
 }

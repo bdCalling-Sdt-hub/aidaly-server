@@ -27,7 +27,7 @@ const reviewSchema = new mongoose.Schema({
         type: String, // Assuming comment is optional
         required:false
     }
-});
+},{timestamps:true});
 
 // Create the review model
 const Review = mongoose.model('Review', reviewSchema);
