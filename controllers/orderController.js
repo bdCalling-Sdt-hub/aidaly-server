@@ -566,7 +566,7 @@ const findNearByDriver = async (req, res, next) => {
         return distance;
     }
 
-    
+    console.log(calculateDistance,"-------------calculate")
     // Get the token from the request headers
    const tokenWithBearer = req.headers.authorization;
    let token;
@@ -597,7 +597,7 @@ const findNearByDriver = async (req, res, next) => {
         // Calculate distances and filter drivers within one kilometer
         const nearbyDrivers = drivers.filter(driver => {
             const distance = calculateDistance(boutiqueLocation.currentLocation, driver);
-            console.log(distance < 10);
+            console.log(distance < 10,"-----------------");
             return distance < 1.5; // Filter drivers within one kilometer
         });
         
@@ -714,14 +714,14 @@ const boutiqueDashboard={
 console.log(totalAmountOfActiveOrder)
 // console.log(activeOrders)
     
-   if(allOrderedProductOfBoutique.length===0){
-    res.status(200).json(Response({statusCode:200,status:"ok",message:"your product havent ordered yet ", }))
-   }
+//    if(allOrderedProductOfBoutique.length===0){
+//     return res.status(200).json(Response({statusCode:200,status:"ok",message:"your product havent ordered yet ", }))
+//    }
 
-        res.status(200).json(Response({statusCode:200,status:"ok",message:"fetch alldeta ",data:boutiqueDashboard}))
+        return res.status(200).json(Response({statusCode:200,status:"ok",message:"fetch alldeta ",data:boutiqueDashboard}))
     } catch (error) {
          // server error
-         res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
+       return   res.status(500).json(Response({status:"faield",message:error.message,statusCode:500}))
     }
 }
 
@@ -882,6 +882,7 @@ const assignedOrderedShowe = async (req, res, next) => {
 }
 
 const deliveriedOrder=async(req,res,next)=>{
+    try {
    // for pagination 
    const page = parseInt(req.query.page) || 1;
    const limit = parseInt(req.query.limit) || 10;
@@ -898,7 +899,7 @@ const deliveriedOrder=async(req,res,next)=>{
        return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.', status: 'failed' }));
    }
 
-   try {
+ 
        // Verify the token
        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
        if (!decoded._id === "boutique") {
@@ -906,8 +907,12 @@ const deliveriedOrder=async(req,res,next)=>{
        }
       const deliveriedOrderLength=await Order.find({boutiqueId:decoded._id,status:"delivered"}).countDocuments()
       const deliveriedOrder=await Order.find({boutiqueId:decoded._id,status:"delivered"}).populate("boutiqueId orderItems")
-      const paginationOfProduct= pagination(deliveriedOrderLength,limit,page)
+      if(deliveriedOrder.length===0){
+        return res.status(200).json(Response({ statusCode: 200, message: 'you dont have any order', status: 'failed' }));
 
+    }
+      const paginationOfProduct= pagination(deliveriedOrderLength,limit,page)
+    
       return res.status(200).json(Response({
         message: "Orders with assignedDriverProgress as 'inprogress'",
         status: "success",

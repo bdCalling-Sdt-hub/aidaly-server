@@ -299,13 +299,29 @@ const updatedVehical = async (req, res, next) => {
         // Find the vehicle by user ID
         const vehicle = await Driver.findOne({ userId: decoded._id }).exec();
 
-        if (!vehicle) {
-            return res.status(404).json({ success: false, message: 'Vehicle not found.' });
-        }
+       
 
         // Update vehicle information
         const { make, model, year, registrationNumber } = req.body;
         const { driverLicense, registration, policeCheck } = req.files;
+        if (!vehicle) {
+             // Create a new vehicle object with user ID
+        const newVehicle = new Driver({
+            userId: decoded._id,
+            make,
+            model,
+            year,registrationNumber,
+            driverLicense:driverLicense[0],
+            registration:registration[0],
+            policeCheck:policeCheck[0],
+           
+        });
+
+        // Save the new vehicle to the database
+        const data =await newVehicle.save();
+            
+            return res.status(200).json(Response({ success: false, message: 'Vehicle not found.',data:data }));
+        }
 
         vehicle.make = make || vehicle.make;
         vehicle.model = model || vehicle.model;

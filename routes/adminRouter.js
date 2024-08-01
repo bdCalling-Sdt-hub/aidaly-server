@@ -1,7 +1,7 @@
 const express = require('express');
 const { caretTermsAdnControllerForAdmin } = require('../controllers/termsOfUseController');
 const { getTotalOfTheDashboared, totalRevinew, feedbackRatio, todayorderDetailsinDashboared, totalCostAndSell } = require('../controllers/dashboard/analysisController');
-const {  blocakShopper, getShoperByOrder, } = require('../controllers/dashboard/shopperInDashboardController');
+const {  blocakShopper, getShoperByOrder, getAllShopper, } = require('../controllers/dashboard/shopperInDashboardController');
 const { getAllBoutiqueForAdmin, boutiqueDetails,sendFeedback,updateProfileOfboutiqueInDashboared, addBoutique } = require('../controllers/dashboard/boutiqueInDashboared');
 const { showAllDriverInDashboared, showDriverDetails, driverDashboared } = require('../controllers/dashboard/driverInDashboared');
 const upload = require('../middlewares.js/fileUpload');
@@ -21,6 +21,7 @@ router.get('/totalCostAndSell',totalCostAndSell)
 // router.get('/getAllShopperForAdmin',getAllShopperForAdmin)
 router.patch('/blocakShopper',blocakShopper)
 router.get('/getShoperByOrder',getShoperByOrder)
+router.get('/getAllShopper',getAllShopper)
 // boutique in admin 
 router.get('/getAllBoutiqueForAdmin',getAllBoutiqueForAdmin)
 router.get('/boutiqueDetails',boutiqueDetails)
