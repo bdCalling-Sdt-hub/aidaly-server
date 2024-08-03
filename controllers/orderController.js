@@ -906,7 +906,7 @@ const deliveriedOrder=async(req,res,next)=>{
            return res.status(401).json(Response({ statusCode: 401, message: 'You are not a boutique.', status: 'failed' }));
        }
       const deliveriedOrderLength=await Order.find({boutiqueId:decoded._id,status:"delivered"}).countDocuments()
-      const deliveriedOrder=await Order.find({boutiqueId:decoded._id,status:"delivered"}).populate("boutiqueId orderItems")
+      const deliveriedOrder=await Order.find({boutiqueId:decoded._id,status:"delivered"}).populate("orderItems")
       if(deliveriedOrder.length===0){
         return res.status(200).json(Response({ statusCode: 200, message: 'you dont have any order', status: 'failed' }));
 

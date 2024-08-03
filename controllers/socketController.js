@@ -12,6 +12,7 @@ const pagination = require('../helpers/pagination');
 const Location = require('../models/Location');
 const Order = require('../models/Order');
 const Message = require('../models/Message');
+const Chat = require('../models/Chat');
 
 
 
@@ -88,26 +89,68 @@ const event=`orderStatus`
     }
     
 })
+socket.on('message', async (data, ack) => {
+    try {
+        const { text, chatId, receiverId, sendId } = data;
 
-socket.on('message',async(data) =>{
-    const {text,chatId,receiverId,sendId}=data
-    console.log(text,chatId,receiverId,sendId)
+        // Validate input
+        if (!text || !chatId || !receiverId || !sendId) {
+            throw new Error('Missing required fields');
+        }
 
-    const message={
-        chatId:chatId,
-        senderId:sendId,
-        receiverId:receiverId,
-        text:text,
-        messageType:"text"
+        const message = {
+            chatId: chatId,
+            senderId: sendId,
+            reciverId: receiverId,
+            textMessage: text,
+            messageType: 'text'
+        };
 
+        // Save the message
+        const createMessage = await Message.create(message);
 
+        // Emit message to the chat room
+        const messageEvent = `sendMessage::${chatId}`;
+        io.emit(messageEvent, { message: createMessage });
+        const updatechatLastMessage=await Chat.findByIdAndUpdate(chatId,{lastMessage:text},{new:true})
+        // emait the message
+        const lastmessage=`lastMessage::${chatId}`
+        io.emit(lastmessage,{message:updatechatLastMessage})
+
+        // Emit acknowledgment with success response
+        if (ack) {
+            ack({ message: createMessage });
+        }
+
+    } catch (error) {
+        console.error('Error handling message:', error);
+
+        // Emit acknowledgment with error response
+        if (ack) {
+            ack({ error: error.message });
+        }
     }
-    const createMessage= await Message.create(message)
-    console.log(createMessage)           
-    io.emit("sendMessage",{message:createMessage.text} );
+});
 
-    // socket.emit('test2',{"name":"hello",data})
-})
+// socket.on('message',async(data) =>{
+//     const {text,chatId,receiverId,sendId}=data
+//     console.log(text,chatId,receiverId,sendId)
+
+//     const message={
+//         chatId:chatId,
+//         senderId:sendId,
+//         receiverId:receiverId,
+//         text:text,
+//         messageType:"text"
+
+
+//     }
+//     const createMessage= await Message.create(message)
+//     console.log(createMessage)           
+//     io.emit("sendMessage",{message:createMessage.text} );
+
+//     // socket.emit('test2',{"name":"hello",data})
+// })
 
         socket.on('disconnect', async() => {
             console.log("you are disconnect")
