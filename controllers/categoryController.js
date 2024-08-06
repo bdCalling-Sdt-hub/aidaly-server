@@ -4,8 +4,16 @@ const jwt = require("jsonwebtoken");
 
 // Create category
 const createCategory = async (req, res, next) => {
-    const { name } = req.body;
+    
+
+try {
+    const { name,sizeType } = req.body;
     const {categoryImage} = req.files;
+    if(!categoryImage){
+        return res.status(404).json(Response({ statusCode: 404, message: 'pleace input image.',status:'faield' }));
+    
+    
+    }
 
 const files = [];
 if (req.files) {
@@ -19,6 +27,9 @@ if (req.files) {
     // console.log(files);
   });
 }
+
+console.log(files,"-------------")
+
     
 // Get the token from the request headers
 const tokenWithBearer = req.headers.authorization;
@@ -32,8 +43,6 @@ if (tokenWithBearer && tokenWithBearer.startsWith('Bearer ')) {
 if (!token) {
     return res.status(401).json(Response({ statusCode: 401, message: 'Token is missing.',status:'faield' }));
 }
-
-try {
     // Verify the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
@@ -54,7 +63,7 @@ try {
         }
 
         // Create the category
-        const newCategory = await Category.create({name:lowercaseName,categoryImage:files[0]} )
+        const newCategory = await Category.create({name:lowercaseName,categoryImage:files[0],sizeType:sizeType})
 
         res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Category created successfully", data: { category: newCategory } }));
     } catch (error) {

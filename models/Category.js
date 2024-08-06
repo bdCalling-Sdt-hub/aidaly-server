@@ -12,6 +12,7 @@ const categorySchema = new mongoose.Schema({
   },
   
   categoryImage: { type: Object, required: true},
+  sizeType:{type:String,enum:["numeric","alphabet"]}
 
   
   
