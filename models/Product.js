@@ -48,7 +48,16 @@ size: {
     type: Array, // Array of strings
     required: true,
      // Default empty array if not provided
-},
+}
+// if add like this i could handel the size and quentity 
+// size: [
+//     {
+//         size:{type:String,required:true},
+//         price:{type:String,required:true},
+//         quantity:{type:String,required:true}
+//     }
+// ]
+ ,
     rating: {
         type: String,
         default: "0"
@@ -93,3 +102,23 @@ size: {
 const Product = mongoose.model('Product', productSchema);
 
 module.exports = Product;
+
+// this is the feadback model
+
+// const mongoose = require('mongoose');
+
+// const variantSchema = new mongoose.Schema({
+//   size: String,
+//   color: String,
+//   inventoryQuantity: Number,
+//   price: Number
+// });
+
+// const productSchema = new mongoose.Schema({
+//   name: String,
+//   description: String,
+//   category: String,
+//   variants: [variantSchema]
+// });
+
+// module.exports = mongoose.model('Product', productSchema);

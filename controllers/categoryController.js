@@ -68,7 +68,7 @@ if (!token) {
         res.status(200).json(Response({ statusCode: 200, status: "ok", message: "Category created successfully", data: { category: newCategory } }));
     } catch (error) {
         console.error("Error creating category:", error);
-        res.status(500).json(Response({ statusCode: 500, message: 'Internal server error', status: "Failed" }));
+        res.status(500).json(Response({ statusCode: 500, message: error.message, status: "Failed" }));
     }
 };
 

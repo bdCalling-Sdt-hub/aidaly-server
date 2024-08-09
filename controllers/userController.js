@@ -10,6 +10,11 @@ const signUp = async (req, res) => {
     try {
         const { name, email, password,address, phone, city, state, dateOfBirth, role } = req.body;
         const {image} = req.files;
+        if(!image){
+            return res.status(400).json(Response({  status:"Failed", statusCode:400,message: "image is required" }));
+
+
+        }
 
         const files = [];
         if (req.files) {

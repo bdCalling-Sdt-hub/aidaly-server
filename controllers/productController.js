@@ -13,6 +13,11 @@ const productCreate = async (req, res, next) => {
     
     const { productName, category, inventoryQuantity, color, size,price } = req.body;
     const { productImage1 } = req.files;
+    if(!productImage1){
+        return res.status(401).json(Response({ statusCode: 401, message: 'image is messing',status:'faield' }));
+
+
+    }
 
 
    
@@ -28,6 +33,7 @@ const productCreate = async (req, res, next) => {
         // console.log(files);
       });
     }
+
 
 
     // Get the token from the request headers
@@ -54,6 +60,32 @@ const productCreate = async (req, res, next) => {
             // If the user does not have the "boutique" role, return an error
             return res.status(403).json(Response({ statusCode: 403, message: 'You are not authorized to create products.',status:'faield' }));
         }
+ 
+        // / Find the category to check sizeType
+    const categoryDoc = await Category.findOne({name:category});
+
+    if (!categoryDoc) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+
+    // Determine the valid size pattern based on the category's sizeType
+    let validSizesPattern;
+    if (categoryDoc.sizeType === 'numeric') {
+      validSizesPattern = /^[0-9]+$/;  // Numeric sizes
+    } else if (categoryDoc.sizeType === 'alphabet') {
+      validSizesPattern = /^(S|M|L|XL|XXL|XXXL)$/;  // Adjust as needed
+    } else {
+      return res.status(400).json({ message: `Invalid sizeType '${categoryDoc.sizeType}'` });
+    }
+   
+    //  Validate sizes based on the category sizeType
+    for (const variant of size) {
+      if (!validSizesPattern.test(variant.size)) {
+        return res.status(403).json({statusCode:403, message: `Invalid size '${size}' for sizeType '${categoryDoc.sizeType}'` });
+      }
+    }
+
+
         const slug = slugify(productName, { lower: true });
         const newProduct = new Product({
             userId:decoded._id,
@@ -87,6 +119,56 @@ const productCreate = async (req, res, next) => {
         return res.status(500).json(Response({ statusCode: 500, message: 'Internal server error.',status:'server error' }));
     }
 };
+
+
+// this work for done for the fead back i will do it later
+// Function to add a product
+// const productCreate = async (req, res) => {
+//   try {
+//     const { name, description, category,variants  } = req.body;
+//     console.log(variants,"----------------")
+
+//     // Find the category to check sizeType
+//     const categoryDoc = await Category.findOne({name:category});
+
+//     if (!categoryDoc) {
+//       return res.status(404).json({ message: 'Category not found' });
+//     }
+
+//     // Determine the valid size pattern based on the category's sizeType
+//     let validSizesPattern;
+//     if (categoryDoc.sizeType === 'numeric') {
+//       validSizesPattern = /^[0-9]+$/;  // Numeric sizes
+//     } else if (categoryDoc.sizeType === 'alphabet') {
+//       validSizesPattern = /^(S|M|L|XL|XXL|XXXL)$/;  // Adjust as needed
+//     } else {
+//       return res.status(400).json({ message: `Invalid sizeType '${categoryDoc.sizeType}'` });
+//     }
+//     const variantss=JSON.parse(variants)
+
+//     // Validate sizes based on the category sizeType
+//     for (const variant of variantss) {
+//       if (!validSizesPattern.test(variant.size)) {
+//         return res.status(400).json({statusCode:400, message: `Invalid size '${variant.size}' for sizeType '${categoryDoc.sizeType}'` });
+//       }
+//     }
+
+//     // Create a new product
+//     const newProduct = new Product({
+//       name,
+//       description,
+//       category,
+//       variants: JSON.parse(variants)
+//     });
+
+//     await newProduct.save();
+
+//     res.status(201).json({ message: 'Product added successfully', product: newProduct });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server error', error });
+//   }
+// };
 
 // product show by user 
 const showProductByUser=async(req,res,next)=>{

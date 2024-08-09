@@ -97,6 +97,23 @@ socket.on('message', async (data, ack) => {
         if (!text || !chatId || !receiverId || !sendId) {
             throw new Error('Missing required fields');
         }
+        // Check if the chat exists
+        const chat = await Chat.findById(chatId);
+        if (!chat) {
+            throw new Error('Chat not found');
+        }
+
+        // Check if the sender exists
+        const sender = await User.findById(sendId);
+        if (!sender) {
+            throw new Error('Sender not found');
+        }
+
+        // Check if the receiver exists
+        const receiver = await User.findById(receiverId);
+        if (!receiver) {
+            throw new Error('Receiver not found');
+        }
 
         const message = {
             chatId: chatId,
